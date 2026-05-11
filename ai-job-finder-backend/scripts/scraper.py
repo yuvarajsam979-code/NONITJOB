@@ -27,17 +27,27 @@ def parse_and_upload(raw_text):
     
     prompt = f"""
     Extract job listings from the following text. 
-    Format each job as a JSON object with:
-    - title
-    - description (keep it simple)
-    - category (e.g., Driver, Electrician, Helper)
-    - salary
-    - location (address only)
-    - contact (phone number)
+    CRITICAL INSTRUCTIONS:
+    - CONVERT complicated jargon into simple language (e.g., 'Logistics associate' -> 'Delivery Boy').
+    - DETECT SCAMS: If the job asks for a 'Security Deposit' or 'Registration Fee', mark isScam: true.
+    - LOCAL FRIENDLY: Rewrite the description so it's easy for a non-IT worker to understand.
     
+    Format as JSON:
+    {{
+      "jobs": [
+        {{
+          "title": "Simple Title",
+          "description": "Easy description",
+          "category": "Role",
+          "salary": "Range",
+          "location": "Area name",
+          "contact": "Phone",
+          "isScam": false
+        }}
+      ]
+    }}
+
     Text: {raw_text}
-    
-    Return ONLY a JSON array of objects.
     """
     
     try:

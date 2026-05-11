@@ -4,6 +4,8 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import JobCard from './components/JobCard';
 import VoiceButton from './components/VoiceButton';
+import LoginScreen from './screens/LoginScreen';
+import OTPScreen from './screens/OTPScreen';
 
 const MOCK_JOBS = [
   {
@@ -29,6 +31,9 @@ const MOCK_JOBS = [
 export default function App() {
   const [location, setLocation] = useState(null);
   const [language, setLanguage] = useState('EN');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('LOGIN'); // LOGIN, OTP, HOME
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -42,6 +47,29 @@ export default function App() {
       setLocation(location.coords);
     })();
   }, []);
+
+  const handleLogin = (phone) => {
+    setPhoneNumber(phone);
+    setCurrentScreen('OTP');
+  };
+
+  const handleVerify = (otp) => {
+    // Demo verification logic
+    if (otp === '123456') {
+      setIsAuthenticated(true);
+      setCurrentScreen('HOME');
+    } else {
+      alert('Invalid OTP. Use 123456 for demo.');
+    }
+  };
+
+  if (!isAuthenticated && currentScreen === 'LOGIN') {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  if (!isAuthenticated && currentScreen === 'OTP') {
+    return <OTPScreen phoneNumber={phoneNumber} onVerify={handleVerify} />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
