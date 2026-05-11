@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, SafeAreaView, StatusBar, TouchableOpacity, RefreshControl } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import JobCard from './components/JobCard';
@@ -7,33 +7,35 @@ import VoiceButton from './components/VoiceButton';
 import LoginScreen from './screens/LoginScreen';
 import OTPScreen from './screens/OTPScreen';
 
-const MOCK_JOBS = [
-  {
-    id: '1',
-    title: 'Delivery Boy',
-    category: 'Logistics',
-    salary: '₹15,000/month',
-    description: 'Looking for an active delivery person for local area deliveries.',
-    location: { lat: 13.0827, lng: 80.2707, address: 'T-Nagar, Chennai' },
-    employer: { contact: '9876543210' }
-  },
-  {
-    id: '2',
-    title: 'Electrician',
-    category: 'Technical',
-    salary: '₹800/day',
-    description: 'Need an electrician for a commercial building project.',
-    location: { lat: 13.0405, lng: 80.2337, address: 'Anna Nagar, Chennai' },
-    employer: { contact: '9123456789' }
-  }
-];
+const API_URL = 'http://localhost:5001/api/jobs'; // Update to your local IP if testing on a real device
 
 export default function App() {
+  const [jobs, setJobs] = useState([]);
   const [location, setLocation] = useState(null);
   const [language, setLanguage] = useState('EN');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState('LOGIN'); // LOGIN, OTP, HOME
+  const [currentScreen, setCurrentScreen] = useState('LOGIN');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchJobs();
+    }
+  }, [isAuthenticated]);
+
+  const fetchJobs = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setJobs(data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -103,10 +105,13 @@ export default function App() {
           }}
           showsUserLocation={true}
         >
-          {MOCK_JOBS.map((job) => (
+          {jobs.map((job) => (
             <Marker
-              key={job.id}
-              coordinate={{ latitude: job.location.lat, longitude: job.location.lng }}
+              key={job._id}
+              coordinate={{ 
+                latitude: job.location.coordinates[1], 
+                longitude: job.location.coordinates[0] 
+              }}
               title={job.title}
               description={job.salary}
             />
@@ -115,10 +120,18 @@ export default function App() {
       </View>
 
       {/* Job List Section */}
-      <ScrollView style={styles.jobList} contentContainerStyle={styles.scrollPadding}>
-        <Text style={styles.sectionTitle}>Nearby Jobs</Text>
-        {MOCK_JOBS.map((job) => (
-          <JobCard key={job.id} job={job} />
+      <ScrollView 
+        style={styles.jobList} 
+        contentContainerStyle={styles.scrollPadding}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={fetchJobs} />
+        }
+      >
+        <Text style={styles.sectionTitle}>
+          {jobs.length > 0 ? 'Nearby Jobs' : 'Looking for jobs near you...'}
+        </Text>
+        {jobs.map((job) => (
+          <JobCard key={job._id} job={job} />
         ))}
       </ScrollView>
 
