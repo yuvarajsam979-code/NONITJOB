@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, ScrollView, SafeAreaView, StatusBar, TouchableO
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { Home, User, PlusCircle, Search, MapPin, Briefcase, Phone, MessageCircle, ShieldCheck, ChevronRight, Mic, Sparkles, Users, IndianRupee } from 'lucide-react-native';
+import { Home, User, PlusCircle, Search, MapPin, Briefcase, Phone, MessageCircle, ShieldCheck, ChevronRight, Mic, Sparkles, Users, IndianRupee, Clock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import JobCard from './components/JobCard';
@@ -62,7 +62,7 @@ function HomeScreen({
   jobs, loading, fetchJobs, language, setLanguage, onVoicePress, onJobPress, onChatPress,
   searchQuery, setSearchQuery, selectedCategory, setSelectedCategory 
 }) {
-  const [sortBySalary, setSortBySalary] = useState(false);
+  const [sortMode, setSortMode] = useState('Newest'); // 'Newest' or 'Salary'
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -73,26 +73,24 @@ function HomeScreen({
     ]).start();
   }, []);
 
-  // Dynamic Categories from Data
   const categories = ['All', ...new Set(jobs.map(j => j.category))];
 
-  // Advanced Filter & Sort Logic
   const filteredJobs = jobs.filter(job => {
     const query = searchQuery.toLowerCase();
-    const matchesSearch = 
+    return (
       job.title.toLowerCase().includes(query) || 
       job.category.toLowerCase().includes(query) ||
       job.description?.toLowerCase().includes(query) ||
       job.location?.address?.toLowerCase().includes(query) ||
-      job.employer?.name?.toLowerCase().includes(query);
-    
-    const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+      job.employer?.name?.toLowerCase().includes(query)
+    ) && (selectedCategory === 'All' || job.category === selectedCategory);
   }).sort((a, b) => {
-    if (!sortBySalary) return 0;
-    const valA = parseInt(a.salary?.replace(/[^0-9]/g, '') || 0);
-    const valB = parseInt(b.salary?.replace(/[^0-9]/g, '') || 0);
-    return valB - valA;
+    if (sortMode === 'Salary') {
+      const getSalary = (s) => parseInt(s?.match(/\d+/)?.[0] || 0);
+      return getSalary(b.salary) - getSalary(a.salary);
+    }
+    // Default: Newest (assuming _id or a date field exists, or just keep order)
+    return 0; 
   });
 
   return (
@@ -110,11 +108,17 @@ function HomeScreen({
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity 
-              onPress={() => setSortBySalary(!sortBySalary)}
-              style={[styles.sortBtn, sortBySalary && styles.sortBtnActive]}
+              onPress={() => setSortMode(sortMode === 'Newest' ? 'Salary' : 'Newest')}
+              style={[styles.sortBtn, sortMode === 'Salary' && styles.sortBtnActive]}
             >
-              <IndianRupee size={14} color={sortBySalary ? '#FFF' : '#2563EB'} />
-              <Text style={[styles.sortBtnText, sortBySalary && styles.sortBtnTextActive]}>HIGH PAY</Text>
+              {sortMode === 'Salary' ? (
+                <IndianRupee size={14} color="#FFF" />
+              ) : (
+                <Clock size={14} color="#2563EB" />
+              )}
+              <Text style={[styles.sortBtnText, sortMode === 'Salary' && styles.sortBtnTextActive]}>
+                {sortMode === 'Salary' ? 'HIGH PAY' : 'NEWEST'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -140,7 +144,6 @@ function HomeScreen({
         contentContainerStyle={styles.feedContent}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
       >
-        {/* Category Pills */}
         <View style={styles.categorySection}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {categories.map((cat) => (
