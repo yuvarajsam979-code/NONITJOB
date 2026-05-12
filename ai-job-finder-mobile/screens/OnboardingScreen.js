@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronRight, ShieldCheck, Sparkles, MapPin } from 'lucide-react-native';
@@ -28,7 +28,7 @@ const slides = [
 
 const OnboardingScreen = ({ onFinish }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const fadeAnim = new Animated.Value(1);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
@@ -73,7 +73,7 @@ const OnboardingScreen = ({ onFinish }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
+  container: { flex: 1, backgroundColor: '#FFF', height: '100%', width: '100%' },
   content: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
   iconBox: { 
     width: 200, height: 200, borderRadius: 100, backgroundColor: '#F8FAFC', 

@@ -65,7 +65,7 @@ const LoginScreen = ({ onLogin }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
+  container: { flex: 1, backgroundColor: '#FFF', height: '100%', width: '100%' },
   inner: { flex: 1, paddingHorizontal: 30, justifyContent: 'space-between', paddingVertical: 40 },
   headerBox: { marginTop: 40 },
   brandBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 20 },

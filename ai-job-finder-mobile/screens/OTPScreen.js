@@ -62,7 +62,7 @@ const OTPScreen = ({ phoneNumber, onVerify }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
+  container: { flex: 1, backgroundColor: '#FFF', height: '100%', width: '100%' },
   inner: { flex: 1, paddingHorizontal: 30, justifyContent: 'space-between', paddingVertical: 40 },
   headerBox: { marginTop: 40, alignItems: 'center' },
   iconCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#F0FDF4', justifyContent: 'center', alignItems: 'center', marginBottom: 30 },
