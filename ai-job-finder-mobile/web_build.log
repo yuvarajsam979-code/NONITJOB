@@ -1,0 +1,19 @@
+Starting project at /Users/yuvaraj/Documents/NONITWORKSPACE/ai-job-finder-mobile
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+The following packages should be updated for best compatibility with the installed expo version:
+  @react-native-async-storage/async-storage@3.0.2 - expected version: 2.2.0
+  babel-preset-expo@55.0.21 - expected version: ~54.0.10
+  expo-linear-gradient@55.0.13 - expected version: ~15.0.8
+  react-native-safe-area-context@5.7.0 - expected version: ~5.6.0
+  react-native-screens@4.25.0 - expected version: ~4.16.0
+Your project may not work correctly until you install the expected versions of the packages.
+Waiting on http://localhost:8090
+Logs for your project will appear below.
+Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% ( 519/2333)
+Web Bundled 4191ms index.js (2483 modules)
+ LOG  [web] Logs will appear in the browser console
+Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 177ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console

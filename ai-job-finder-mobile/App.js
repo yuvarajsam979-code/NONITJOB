@@ -57,12 +57,6 @@ function SplashScreen({ onFinish }) {
 }
 
 // ---------------------------------------------------------
-// ---------------------------------------------------------
-// MAIN APP
-// ---------------------------------------------------------
-export default function App() {
-
-// ---------------------------------------------------------
 // MAIN APP
 // ---------------------------------------------------------
 export default function App() {
@@ -102,11 +96,6 @@ export default function App() {
     setIsVoiceActive(false);
   };
 
-  if (appState === 'SPLASH') return <SplashScreen onFinish={() => setAppState('ONBOARDING')} />;
-  if (appState === 'ONBOARDING') return <OnboardingScreen onFinish={() => setAppState('LOGIN')} />;
-  if (appState === 'LOGIN') return <LoginScreen onLogin={(p) => { setPhoneNumber(p); setAppState('OTP'); }} />;
-  if (appState === 'OTP') return <OTPScreen phoneNumber={phoneNumber} onVerify={(o) => { if(o === '123456') setAppState('MAIN'); else alert('Use 123456'); }} />;
-
   return (
     <PaperProvider>
       <NavigationContainer>
@@ -121,45 +110,55 @@ export default function App() {
         {isEmployerActive && <EmployerDashboard onClose={() => setIsEmployerActive(false)} />}
         {isChatActive && <AIChatScreen onClose={() => setIsChatActive(false)} />}
         
-        <Tab.Navigator
-          screenOptions={{
-            tabBarStyle: styles.tabBar,
-            tabBarActiveTintColor: '#2563EB',
-            tabBarInactiveTintColor: '#94A3B8',
-            headerShown: false
-          }}
-        >
-          <Tab.Screen 
-            name="Explore" 
-            children={() => (
-              <HomeScreen 
-                jobs={jobs} 
-                loading={loading} 
-                fetchJobs={fetchJobs} 
-                language={language} 
-                setLanguage={setLanguage} 
-                onVoicePress={() => setIsVoiceActive(true)} 
-                onJobPress={setSelectedJob} 
-                onChatPress={() => setIsChatActive(true)}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-              />
-            )}
-            options={{ tabBarIcon: ({ color }) => <Home size={26} color={color} /> }}
-          />
-          <Tab.Screen 
-            name="Post" 
-            component={PostJobScreen}
-            options={{ tabBarIcon: ({ color }) => <PlusCircle size={26} color={color} /> }}
-          />
-          <Tab.Screen 
-            name="Profile" 
-            children={() => <ProfileScreen onEmployerPress={() => setIsEmployerActive(true)} />}
-            options={{ tabBarIcon: ({ color }) => <User size={26} color={color} /> }}
-          />
-        </Tab.Navigator>
+        {appState === 'SPLASH' ? (
+          <SplashScreen onFinish={() => setAppState('ONBOARDING')} />
+        ) : appState === 'ONBOARDING' ? (
+          <OnboardingScreen onFinish={() => setAppState('LOGIN')} />
+        ) : appState === 'LOGIN' ? (
+          <LoginScreen onLogin={(p) => { setPhoneNumber(p); setAppState('OTP'); }} />
+        ) : appState === 'OTP' ? (
+          <OTPScreen phoneNumber={phoneNumber} onVerify={(o) => { if(o === '123456') setAppState('MAIN'); else alert('Use 123456'); }} />
+        ) : (
+          <Tab.Navigator
+            screenOptions={{
+              tabBarStyle: styles.tabBar,
+              tabBarActiveTintColor: '#2563EB',
+              tabBarInactiveTintColor: '#94A3B8',
+              headerShown: false
+            }}
+          >
+            <Tab.Screen 
+              name="Explore" 
+              children={() => (
+                <HomeScreen 
+                  jobs={jobs} 
+                  loading={loading} 
+                  fetchJobs={fetchJobs} 
+                  language={language} 
+                  setLanguage={setLanguage} 
+                  onVoicePress={() => setIsVoiceActive(true)} 
+                  onJobPress={setSelectedJob} 
+                  onChatPress={() => setIsChatActive(true)}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                />
+              )}
+              options={{ tabBarIcon: ({ color }) => <Home size={26} color={color} /> }}
+            />
+            <Tab.Screen 
+              name="Post" 
+              component={PostJobScreen}
+              options={{ tabBarIcon: ({ color }) => <PlusCircle size={26} color={color} /> }}
+            />
+            <Tab.Screen 
+              name="Profile" 
+              children={() => <ProfileScreen onEmployerPress={() => setIsEmployerActive(true)} />}
+              options={{ tabBarIcon: ({ color }) => <User size={26} color={color} /> }}
+            />
+          </Tab.Navigator>
+        )}
       </NavigationContainer>
     </PaperProvider>
   );
@@ -176,6 +175,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 30, elevation: 20
   },
   splashBrand: { fontSize: 48, fontWeight: '900', color: '#FFF', letterSpacing: 4, textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: {width: 0, height: 4}, textShadowRadius: 10 },
+  splashTagline: { fontSize: 18, color: 'rgba(255,255,255,0.8)', fontWeight: '600', letterSpacing: 1 },
   // --- MAP CONNECTION ---
   mapConnectionBox: { marginBottom: 35 },
   mapInner: { 
