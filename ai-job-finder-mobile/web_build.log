@@ -1,5 +1,5 @@
+  --non-interactive is not supported, use $CI=1 instead
 Starting project at /Users/yuvaraj/Documents/NONITWORKSPACE/ai-job-finder-mobile
-Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
 Starting Metro Bundler
 The following packages should be updated for best compatibility with the installed expo version:
   @react-native-async-storage/async-storage@3.0.2 - expected version: 2.2.0
@@ -10,28 +10,7 @@ The following packages should be updated for best compatibility with the install
 Your project may not work correctly until you install the expected versions of the packages.
 Waiting on http://localhost:8090
 Logs for your project will appear below.
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% ( 519/2333)
-Web Bundled 4191ms index.js (2483 modules)
- LOG  [web] Logs will appear in the browser console
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 177ms index.js (1 module)
- LOG  [web] Logs will appear in the browser console
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 444ms index.js (1 module)
- LOG  [web] Logs will appear in the browser console
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 162ms index.js (1 module)
- LOG  [web] Logs will appear in the browser console
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 212ms index.js (1 module)
- LOG  [web] Logs will appear in the browser console
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 131ms index.js (1 module)
- LOG  [web] Logs will appear in the browser console
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 232ms index.js (1 module)
- LOG  [web] Logs will appear in the browser console
-Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 252ms index.js (1 module)
+Web ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 98.8% (168/169)
+Web ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2387/2415)
+Web Bundled 4872ms index.js (2480 modules)
  LOG  [web] Logs will appear in the browser console
