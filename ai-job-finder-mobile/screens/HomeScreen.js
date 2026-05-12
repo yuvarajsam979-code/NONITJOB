@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, SafeAreaView, StatusBar, TouchableOpacity, RefreshControl, TextInput, Animated, StyleSheet, Dimensions } from 'react-native';
-import { Search, MapPin, Mic, Sparkles, IndianRupee, Clock, Zap, Star, Briefcase, Filter, ChevronRight, LayoutGrid, Bell } from 'lucide-react-native';
+import { Search, MapPin, Mic, Sparkles, IndianRupee, Clock, Zap, Star, Briefcase, Filter, ChevronRight, LayoutGrid, Bell, ShieldCheck } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import JobCard from '../components/JobCard';
