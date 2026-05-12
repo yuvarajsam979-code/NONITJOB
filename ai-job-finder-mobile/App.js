@@ -18,6 +18,7 @@ import VoiceSearchScreen from './screens/VoiceSearchScreen';
 import JobDetailsScreen from './screens/JobDetailsScreen';
 import AIChatScreen from './screens/AIChatScreen';
 import EmployerDashboard from './screens/EmployerDashboard';
+import HomeScreen from './screens/HomeScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -56,164 +57,10 @@ function SplashScreen({ onFinish }) {
 }
 
 // ---------------------------------------------------------
-// COMPONENT: HOME (WITH FLOAT-IN ANIMATION)
 // ---------------------------------------------------------
-function HomeScreen({ 
-  jobs, loading, fetchJobs, language, setLanguage, onVoicePress, onJobPress, onChatPress,
-  searchQuery, setSearchQuery, selectedCategory, setSelectedCategory 
-}) {
-  const [sortMode, setSortMode] = useState('Newest'); // 'Newest' or 'Salary'
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
-    ]).start();
-  }, []);
-
-  const categories = ['All', ...new Set(jobs.map(j => j.category))];
-
-  const filteredJobs = jobs.filter(job => {
-    const query = searchQuery.toLowerCase();
-    return (
-      job.title.toLowerCase().includes(query) || 
-      job.category.toLowerCase().includes(query) ||
-      job.description?.toLowerCase().includes(query) ||
-      job.location?.address?.toLowerCase().includes(query) ||
-      job.employer?.name?.toLowerCase().includes(query)
-    ) && (selectedCategory === 'All' || job.category === selectedCategory);
-  }).sort((a, b) => {
-    if (sortMode === 'Salary') {
-      const getSalary = (s) => parseInt(s?.match(/\d+/)?.[0] || 0);
-      return getSalary(b.salary) - getSalary(a.salary);
-    }
-    // Default: Newest (assuming _id or a date field exists, or just keep order)
-    return 0; 
-  });
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      
-      <View style={styles.premiumHeader}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.headerLocLabel}>YOUR LOCATION</Text>
-            <View style={styles.headerLocRow}>
-              <MapPin size={16} color="#2563EB" />
-              <Text style={styles.headerLocText}>Chennai, Tamil Nadu</Text>
-            </View>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              onPress={() => setSortMode(sortMode === 'Newest' ? 'Salary' : 'Newest')}
-              style={[styles.sortBtn, sortMode === 'Salary' && styles.sortBtnActive]}
-            >
-              {sortMode === 'Salary' ? (
-                <IndianRupee size={14} color="#FFF" />
-              ) : (
-                <Clock size={14} color="#2563EB" />
-              )}
-              <Text style={[styles.sortBtnText, sortMode === 'Salary' && styles.sortBtnTextActive]}>
-                {sortMode === 'Salary' ? 'HIGH PAY' : 'NEWEST'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.searchBar}>
-          <Search size={22} color="#94A3B8" />
-          <TextInput 
-            placeholder="Search 'Driver', 'Helper'..." 
-            style={styles.searchInput}
-            placeholderTextColor="#94A3B8"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <TouchableOpacity style={styles.voiceIconBox} onPress={onVoicePress}>
-            <View style={styles.voicePulse} />
-            <Mic size={22} color="#2563EB" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Animated.ScrollView 
-        style={[styles.feed, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]} 
-        contentContainerStyle={styles.feedContent}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
-      >
-        {/* Map View Integration (Live & Interactive) */}
-        <View style={styles.mapConnectionBox}>
-          <Text style={styles.sectionTitle}>Jobs Near You (Map View)</Text>
-          <View style={styles.mapInner}>
-            <MapSection jobs={filteredJobs} onJobPress={onJobPress} />
-          </View>
-        </View>
-
-        <View style={styles.categorySection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categories.map((cat) => (
-              <TouchableOpacity 
-                key={cat} 
-                onPress={() => setSelectedCategory(cat)}
-                style={[styles.catPill, selectedCategory === cat && styles.catPillActive]}
-              >
-                <Text style={[styles.catPillText, selectedCategory === cat && styles.catPillTextActive]}>{cat}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.aiSection}>
-          <View style={styles.aiLabel}>
-            <Sparkles size={16} color="#2563EB" />
-            <Text style={styles.aiLabelText}>AI MATCHES FOR YOU</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {jobs.length > 0 ? jobs.slice(0, 3).map((job, i) => (
-              <TouchableOpacity key={i} style={styles.aiCard} onPress={() => onJobPress(job)}>
-                <LinearGradient colors={['#F0F7FF', '#FFF']} style={styles.aiCardInner}>
-                  <Text style={styles.aiJobTitle}>{job.title}</Text>
-                  <Text style={styles.aiJobSalary}>{job.salary}</Text>
-                  <View style={styles.aiMatchBadge}>
-                    <Text style={styles.aiMatchText}>98% MATCH</Text>
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            )) : <View style={styles.aiCard}><Text style={styles.aiCardEmpty}>Searching matches...</Text></View>}
-          </ScrollView>
-        </View>
-
-        <Text style={styles.sectionTitle}>
-          {selectedCategory === 'All' ? 'Jobs Near You' : `${selectedCategory} Jobs`}
-        </Text>
-        
-        {loading ? (
-          <SkeletonCard />
-        ) : filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => (
-            <JobCard key={job._id || Math.random()} job={job} onPress={() => onJobPress(job)} />
-          ))
-        ) : (
-          <View style={styles.emptyState}>
-            <Search size={48} color="#E2E8F0" />
-            <Text style={styles.emptyText}>No jobs found for this search.</Text>
-          </View>
-        )}
-      </Animated.ScrollView>
-
-      <VoiceButton onPress={onVoicePress} />
-
-      <TouchableOpacity style={styles.floatingAI} onPress={onChatPress}>
-        <LinearGradient colors={['#2563EB', '#1E3A8A']} style={styles.floatingAIInner}>
-          <Sparkles size={32} color="#FFF" />
-        </LinearGradient>
-      </TouchableOpacity>
-    </SafeAreaView>
-  );
-}
+// MAIN APP
+// ---------------------------------------------------------
+export default function App() {
 
 // ---------------------------------------------------------
 // MAIN APP
