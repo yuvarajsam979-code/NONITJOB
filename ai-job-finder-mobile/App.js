@@ -58,7 +58,10 @@ function SplashScreen({ onFinish }) {
 // ---------------------------------------------------------
 // COMPONENT: HOME (WITH FLOAT-IN ANIMATION)
 // ---------------------------------------------------------
-function HomeScreen({ jobs, loading, fetchJobs, language, setLanguage, onVoicePress, onJobPress, onChatPress }) {
+function HomeScreen({ 
+  jobs, loading, fetchJobs, language, setLanguage, onVoicePress, onJobPress, onChatPress,
+  searchQuery, setSearchQuery, selectedCategory, setSelectedCategory 
+}) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -68,6 +71,17 @@ function HomeScreen({ jobs, loading, fetchJobs, language, setLanguage, onVoicePr
       Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
     ]).start();
   }, []);
+
+  // Filter Logic
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         job.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         job.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = ['All', 'Driver', 'Electrician', 'Maid', 'Security', 'Delivery', 'Shop Help', 'Painter', 'Plumber'];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -101,6 +115,8 @@ function HomeScreen({ jobs, loading, fetchJobs, language, setLanguage, onVoicePr
             placeholder="Search 'Driver', 'Helper'..." 
             style={styles.searchInput}
             placeholderTextColor="#94A3B8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
           <TouchableOpacity style={styles.voiceIconBox} onPress={onVoicePress}>
             <View style={styles.voicePulse} />
@@ -114,6 +130,21 @@ function HomeScreen({ jobs, loading, fetchJobs, language, setLanguage, onVoicePr
         contentContainerStyle={styles.feedContent}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
       >
+        {/* Category Pills */}
+        <View style={styles.categorySection}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {categories.map((cat) => (
+              <TouchableOpacity 
+                key={cat} 
+                onPress={() => setSelectedCategory(cat)}
+                style={[styles.catPill, selectedCategory === cat && styles.catPillActive]}
+              >
+                <Text style={[styles.catPillText, selectedCategory === cat && styles.catPillTextActive]}>{cat}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
         <View style={styles.aiSection}>
           <View style={styles.aiLabel}>
             <Sparkles size={16} color="#2563EB" />
@@ -134,13 +165,21 @@ function HomeScreen({ jobs, loading, fetchJobs, language, setLanguage, onVoicePr
           </ScrollView>
         </View>
 
-        <Text style={styles.sectionTitle}>Jobs Near You</Text>
+        <Text style={styles.sectionTitle}>
+          {selectedCategory === 'All' ? 'Jobs Near You' : `${selectedCategory} Jobs`}
+        </Text>
+        
         {loading ? (
           <SkeletonCard />
-        ) : (
-          jobs.map((job) => (
+        ) : filteredJobs.length > 0 ? (
+          filteredJobs.map((job) => (
             <JobCard key={job._id || Math.random()} job={job} onPress={() => onJobPress(job)} />
           ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Search size={48} color="#E2E8F0" />
+            <Text style={styles.emptyText}>No jobs found for this search.</Text>
+          </View>
         )}
       </Animated.ScrollView>
 
@@ -168,6 +207,10 @@ export default function App() {
   const [language, setLanguage] = useState('EN');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Root Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
@@ -186,6 +229,11 @@ export default function App() {
     if (appState === 'MAIN') fetchJobs();
   }, [appState, fetchJobs]);
 
+  const handleVoiceResult = (query) => {
+    setSearchQuery(query);
+    setIsVoiceActive(false);
+  };
+
   if (appState === 'SPLASH') return <SplashScreen onFinish={() => setAppState('ONBOARDING')} />;
   if (appState === 'ONBOARDING') return <OnboardingScreen onFinish={() => setAppState('LOGIN')} />;
   if (appState === 'LOGIN') return <LoginScreen onLogin={(p) => { setPhoneNumber(p); setAppState('OTP'); }} />;
@@ -194,7 +242,13 @@ export default function App() {
   return (
     <PaperProvider>
       <NavigationContainer>
-        {isVoiceActive && <VoiceSearchScreen onClose={() => setIsVoiceActive(false)} onSearchResult={() => setIsVoiceActive(false)} />}
+        {/* Overlays */}
+        {isVoiceActive && (
+          <VoiceSearchScreen 
+            onClose={() => setIsVoiceActive(false)} 
+            onSearchResult={handleVoiceResult} 
+          />
+        )}
         {selectedJob && <JobDetailsScreen job={selectedJob} onClose={() => setSelectedJob(null)} />}
         {isEmployerActive && <EmployerDashboard onClose={() => setIsEmployerActive(false)} />}
         {isChatActive && <AIChatScreen onClose={() => setIsChatActive(false)} />}
@@ -209,7 +263,22 @@ export default function App() {
         >
           <Tab.Screen 
             name="Explore" 
-            children={() => <HomeScreen jobs={jobs} loading={loading} fetchJobs={fetchJobs} language={language} setLanguage={setLanguage} onVoicePress={() => setIsVoiceActive(true)} onJobPress={setSelectedJob} onChatPress={() => setIsChatActive(true)} />}
+            children={() => (
+              <HomeScreen 
+                jobs={jobs} 
+                loading={loading} 
+                fetchJobs={fetchJobs} 
+                language={language} 
+                setLanguage={setLanguage} 
+                onVoicePress={() => setIsVoiceActive(true)} 
+                onJobPress={setSelectedJob} 
+                onChatPress={() => setIsChatActive(true)}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+              />
+            )}
             options={{ tabBarIcon: ({ color }) => <Home size={26} color={color} /> }}
           />
           <Tab.Screen 
@@ -311,7 +380,20 @@ const styles = StyleSheet.create({
   aiJobSalary: { fontSize: 15, fontWeight: '800', color: '#10B981' },
   aiMatchBadge: { backgroundColor: 'rgba(37,99,235,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, alignSelf: 'flex-start' },
   aiMatchText: { fontSize: 10, fontWeight: '900', color: '#2563EB' },
-  aiCardEmpty: { fontSize: 14, color: '#94A3B8', marginTop: 60, marginLeft: 20, fontWeight: '600' },
+  // --- FILTERING & CATEGORIES ---
+  categorySection: { marginBottom: 30 },
+  catPill: { 
+    paddingHorizontal: 22, paddingVertical: 12, borderRadius: 20, 
+    backgroundColor: '#FFF', marginRight: 12, borderWidth: 1, borderColor: '#F1F5F9',
+    shadowColor: '#000', shadowOpacity: 0.02, shadowRadius: 5, elevation: 2
+  },
+  catPillActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
+  catPillText: { fontSize: 14, fontWeight: '700', color: '#64748B' },
+  catPillTextActive: { color: '#FFF' },
+
+  // --- EMPTY STATE ---
+  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, opacity: 0.5 },
+  emptyText: { fontSize: 16, fontWeight: '600', color: '#64748B', marginTop: 15 },
 
   tabBar: { 
     height: 100, paddingBottom: 40, paddingTop: 20, borderTopLeftRadius: 50, borderTopRightRadius: 50, 
