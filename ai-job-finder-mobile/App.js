@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, ScrollView, SafeAreaView, StatusBar, TouchableO
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { Home, User, PlusCircle, Search, MapPin, Briefcase, Phone, MessageCircle, ShieldCheck, ChevronRight, Mic, Sparkles, Users } from 'lucide-react-native';
+import { Home, User, PlusCircle, Search, MapPin, Briefcase, Phone, MessageCircle, ShieldCheck, ChevronRight, Mic, Sparkles, Users, IndianRupee } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import JobCard from './components/JobCard';
@@ -62,6 +62,7 @@ function HomeScreen({
   jobs, loading, fetchJobs, language, setLanguage, onVoicePress, onJobPress, onChatPress,
   searchQuery, setSearchQuery, selectedCategory, setSelectedCategory 
 }) {
+  const [sortBySalary, setSortBySalary] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -72,16 +73,27 @@ function HomeScreen({
     ]).start();
   }, []);
 
-  // Filter Logic
+  // Dynamic Categories from Data
+  const categories = ['All', ...new Set(jobs.map(j => j.category))];
+
+  // Advanced Filter & Sort Logic
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         job.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         job.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = 
+      job.title.toLowerCase().includes(query) || 
+      job.category.toLowerCase().includes(query) ||
+      job.description?.toLowerCase().includes(query) ||
+      job.location?.address?.toLowerCase().includes(query) ||
+      job.employer?.name?.toLowerCase().includes(query);
+    
     const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
     return matchesSearch && matchesCategory;
+  }).sort((a, b) => {
+    if (!sortBySalary) return 0;
+    const valA = parseInt(a.salary?.replace(/[^0-9]/g, '') || 0);
+    const valB = parseInt(b.salary?.replace(/[^0-9]/g, '') || 0);
+    return valB - valA;
   });
-
-  const categories = ['All', 'Driver', 'Electrician', 'Maid', 'Security', 'Delivery', 'Shop Help', 'Painter', 'Plumber'];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -96,16 +108,14 @@ function HomeScreen({
               <Text style={styles.headerLocText}>Chennai, Tamil Nadu</Text>
             </View>
           </View>
-          <View style={styles.langContainer}>
-            {['EN', 'हिन्दी'].map((lang) => (
-              <TouchableOpacity 
-                key={lang} 
-                onPress={() => setLanguage(lang)}
-                style={[styles.langBadge, language === lang && styles.activeBadge]}
-              >
-                <Text style={[styles.langBadgeText, language === lang && styles.activeBadgeText]}>{lang}</Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              onPress={() => setSortBySalary(!sortBySalary)}
+              style={[styles.sortBtn, sortBySalary && styles.sortBtnActive]}
+            >
+              <IndianRupee size={14} color={sortBySalary ? '#FFF' : '#2563EB'} />
+              <Text style={[styles.sortBtnText, sortBySalary && styles.sortBtnTextActive]}>HIGH PAY</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -337,6 +347,14 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 30, elevation: 15, zIndex: 100 
   },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
+  headerActions: { flexDirection: 'row', gap: 10 },
+  sortBtn: { 
+    flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F8FAFC', 
+    paddingHorizontal: 15, paddingVertical: 10, borderRadius: 15, borderWidth: 1, borderColor: '#F1F5F9' 
+  },
+  sortBtnActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
+  sortBtnText: { fontSize: 10, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
+  sortBtnTextActive: { color: '#FFF' },
   headerLocLabel: { fontSize: 11, fontWeight: '900', color: '#94A3B8', letterSpacing: 1.5, marginBottom: 6 },
   headerLocRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerLocText: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
