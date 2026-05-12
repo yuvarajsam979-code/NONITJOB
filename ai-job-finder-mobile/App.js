@@ -97,76 +97,78 @@ export default function App() {
   };
 
   return (
-    <PaperProvider>
-      <NavigationContainer>
-        {/* Overlays */}
-        {isVoiceActive && (
-          <VoiceSearchScreen 
-            onClose={() => setIsVoiceActive(false)} 
-            onSearchResult={handleVoiceResult} 
-          />
-        )}
-        {selectedJob && <JobDetailsScreen job={selectedJob} onClose={() => setSelectedJob(null)} />}
-        {isEmployerActive && <EmployerDashboard onClose={() => setIsEmployerActive(false)} />}
-        {isChatActive && <AIChatScreen onClose={() => setIsChatActive(false)} />}
-        
-        {appState === 'SPLASH' ? (
-          <SplashScreen onFinish={() => setAppState('ONBOARDING')} />
-        ) : appState === 'ONBOARDING' ? (
-          <OnboardingScreen onFinish={() => setAppState('LOGIN')} />
-        ) : appState === 'LOGIN' ? (
-          <LoginScreen onLogin={(p) => { setPhoneNumber(p); setAppState('OTP'); }} />
-        ) : appState === 'OTP' ? (
-          <OTPScreen phoneNumber={phoneNumber} onVerify={(o) => { if(o === '123456') setAppState('MAIN'); else alert('Use 123456'); }} />
-        ) : (
-          <Tab.Navigator
-            screenOptions={{
-              tabBarStyle: styles.tabBar,
-              tabBarActiveTintColor: '#2563EB',
-              tabBarInactiveTintColor: '#94A3B8',
-              headerShown: false
-            }}
-          >
-            <Tab.Screen 
-              name="Explore" 
-              children={() => (
-                <HomeScreen 
-                  jobs={jobs} 
-                  loading={loading} 
-                  fetchJobs={fetchJobs} 
-                  language={language} 
-                  setLanguage={setLanguage} 
-                  onVoicePress={() => setIsVoiceActive(true)} 
-                  onJobPress={setSelectedJob} 
-                  onChatPress={() => setIsChatActive(true)}
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                />
-              )}
-              options={{ tabBarIcon: ({ color }) => <Home size={26} color={color} /> }}
+    <View style={{ flex: 1 }}>
+      <PaperProvider>
+        <NavigationContainer>
+          {/* Overlays */}
+          {isVoiceActive && (
+            <VoiceSearchScreen 
+              onClose={() => setIsVoiceActive(false)} 
+              onSearchResult={handleVoiceResult} 
             />
-            <Tab.Screen 
-              name="Post" 
-              component={PostJobScreen}
-              options={{ tabBarIcon: ({ color }) => <PlusCircle size={26} color={color} /> }}
-            />
-            <Tab.Screen 
-              name="Profile" 
-              children={() => <ProfileScreen onEmployerPress={() => setIsEmployerActive(true)} />}
-              options={{ tabBarIcon: ({ color }) => <User size={26} color={color} /> }}
-            />
-          </Tab.Navigator>
-        )}
-      </NavigationContainer>
-    </PaperProvider>
+          )}
+          {selectedJob && <JobDetailsScreen job={selectedJob} onClose={() => setSelectedJob(null)} />}
+          {isEmployerActive && <EmployerDashboard onClose={() => setIsEmployerActive(false)} />}
+          {isChatActive && <AIChatScreen onClose={() => setIsChatActive(false)} />}
+          
+          {appState === 'SPLASH' ? (
+            <SplashScreen onFinish={() => setAppState('ONBOARDING')} />
+          ) : appState === 'ONBOARDING' ? (
+            <OnboardingScreen onFinish={() => setAppState('LOGIN')} />
+          ) : appState === 'LOGIN' ? (
+            <LoginScreen onLogin={(p) => { setPhoneNumber(p); setAppState('OTP'); }} />
+          ) : appState === 'OTP' ? (
+            <OTPScreen phoneNumber={phoneNumber} onVerify={(o) => { if(o === '123456') setAppState('MAIN'); else alert('Use 123456'); }} />
+          ) : (
+            <Tab.Navigator
+              screenOptions={{
+                tabBarStyle: styles.tabBar,
+                tabBarActiveTintColor: '#2563EB',
+                tabBarInactiveTintColor: '#94A3B8',
+                headerShown: false
+              }}
+            >
+              <Tab.Screen 
+                name="Explore" 
+                children={() => (
+                  <HomeScreen 
+                    jobs={jobs} 
+                    loading={loading} 
+                    fetchJobs={fetchJobs} 
+                    language={language} 
+                    setLanguage={setLanguage} 
+                    onVoicePress={() => setIsVoiceActive(true)} 
+                    onJobPress={setSelectedJob} 
+                    onChatPress={() => setIsChatActive(true)}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                  />
+                )}
+                options={{ tabBarIcon: ({ color }) => <Home size={26} color={color} /> }}
+              />
+              <Tab.Screen 
+                name="Post" 
+                component={PostJobScreen}
+                options={{ tabBarIcon: ({ color }) => <PlusCircle size={26} color={color} /> }}
+              />
+              <Tab.Screen 
+                name="Profile" 
+                children={() => <ProfileScreen onEmployerPress={() => setIsEmployerActive(true)} />}
+                options={{ tabBarIcon: ({ color }) => <User size={26} color={color} /> }}
+              />
+            </Tab.Navigator>
+          )}
+        </NavigationContainer>
+      </PaperProvider>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // --- PREMIUM SPLASH ---
-  splashContainer: { flex: 1 },
+  splashContainer: { flex: 1, height: '100%', width: '100%' },
   splashGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   logoCircle: { 
     width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.15)', 
@@ -204,7 +206,7 @@ const styles = StyleSheet.create({
   nextBtnText: { color: '#FFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
 
   // --- GLASS DASHBOARD ---
-  container: { flex: 1, backgroundColor: '#F1F5F9' },
+  container: { flex: 1, backgroundColor: '#F1F5F9', height: '100%', width: '100%' },
   premiumHeader: { 
     paddingHorizontal: 25, paddingTop: 30, paddingBottom: 40, backgroundColor: '#FFF', 
     borderBottomLeftRadius: 50, borderBottomRightRadius: 50, 
