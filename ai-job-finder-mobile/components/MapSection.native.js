@@ -5,13 +5,14 @@ import { MapPin, ChevronRight, Briefcase, Car, Zap, Package, ShieldCheck, Home, 
 import { LinearGradient } from 'expo-linear-gradient';
 
 const MapSection = ({ jobs = [], onJobPress }) => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
     Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.2, duration: 1500, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 1500, useNativeDriver: true }),
+      Animated.parallel([
+        Animated.timing(pulseAnim, { toValue: 3, duration: 2000, useNativeDriver: true }),
+        Animated.timing(opacityAnim, { toValue: 0, duration: 2000, useNativeDriver: true }),
       ])
     ).start();
   }, []);
@@ -48,20 +49,35 @@ const MapSection = ({ jobs = [], onJobPress }) => {
                 longitude: job.location?.longitude || (80.27 + Math.random() * 0.05),
               }}
             >
-              <Animated.View style={[styles.pulseContainer, { transform: [{ scale: pulseAnim }] }]}>
+              <View style={styles.markerWrapper}>
+                {/* Sonar Ring */}
+                <Animated.View style={[
+                  styles.sonarRing, 
+                  { 
+                    backgroundColor: config.color,
+                    opacity: opacityAnim,
+                    transform: [{ scale: pulseAnim }] 
+                  }
+                ]} />
+                {/* Main Marker */}
                 <View style={[styles.markerCircle, { backgroundColor: config.color }]}>
                   <IconComp size={10} color="#FFF" />
                 </View>
-              </Animated.View>
+              </View>
               
               <Callout tooltip onPress={() => onJobPress && onJobPress(job)}>
                 <View style={styles.callout}>
-                  <View style={styles.aiBadge}>
-                    <Sparkles size={10} color="#2563EB" />
-                    <Text style={styles.aiMatchText}>98% MATCH</Text>
+                  <View style={styles.aiHeader}>
+                    <View style={styles.aiBadge}>
+                      <Sparkles size={10} color="#2563EB" />
+                      <Text style={styles.aiMatchText}>98% AI MATCH</Text>
+                    </View>
+                    <View style={styles.matchBarBase}>
+                      <View style={styles.matchBarFill} />
+                    </View>
                   </View>
 
-                  <View style={styles.calloutHeader}>
+                  <View style={styles.calloutBody}>
                     <Text style={styles.calloutTitle} numberOfLines={1}>{job.title}</Text>
                     <Text style={styles.calloutEmployer}>{job.employer?.name || 'Local Employer'}</Text>
                   </View>
@@ -72,8 +88,8 @@ const MapSection = ({ jobs = [], onJobPress }) => {
                   </View>
 
                   <View style={styles.applyBtnBox}>
-                    <LinearGradient colors={['#2563EB', '#1D4ED8']} style={styles.applyBtnInner}>
-                      <Text style={styles.applyBtnText}>VIEW DETAILS</Text>
+                    <LinearGradient colors={['#3B82F6', '#1E3A8A']} style={styles.applyBtnInner}>
+                      <Text style={styles.applyBtnText}>VIEW & APPLY</Text>
                       <ChevronRight size={12} color="#FFF" />
                     </LinearGradient>
                   </View>
@@ -90,29 +106,33 @@ const MapSection = ({ jobs = [], onJobPress }) => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { width: '100%', height: '100%' },
-  pulseContainer: { padding: 10 },
+  markerWrapper: { alignItems: 'center', justifyContent: 'center', width: 40, height: 40 },
+  sonarRing: { position: 'absolute', width: 20, height: 20, borderRadius: 10 },
   markerCircle: { 
     padding: 8, borderRadius: 20, 
     borderWidth: 2, borderColor: '#FFF',
-    shadowColor: '#2563EB', shadowOpacity: 0.5, shadowRadius: 10, elevation: 15
+    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, elevation: 10
   },
   callout: { 
-    backgroundColor: '#FFF', padding: 16, borderRadius: 24, width: 200,
-    borderWidth: 1, borderColor: '#F1F5F9'
+    backgroundColor: '#FFF', padding: 18, borderRadius: 28, width: 210,
+    borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 15
   },
+  aiHeader: { marginBottom: 12 },
   aiBadge: { 
     flexDirection: 'row', alignItems: 'center', gap: 4, 
     backgroundColor: '#F0F7FF', paddingHorizontal: 8, paddingVertical: 4, 
-    borderRadius: 8, alignSelf: 'flex-start', marginBottom: 10 
+    borderRadius: 8, alignSelf: 'flex-start', marginBottom: 6 
   },
   aiMatchText: { fontSize: 8, fontWeight: '900', color: '#2563EB' },
-  calloutHeader: { marginBottom: 12 },
-  calloutTitle: { fontSize: 14, fontWeight: '900', color: '#1E293B' },
+  matchBarBase: { height: 3, backgroundColor: '#F1F5F9', borderRadius: 2, width: '100%' },
+  matchBarFill: { height: '100%', backgroundColor: '#2563EB', borderRadius: 2, width: '90%' },
+  calloutBody: { marginBottom: 12 },
+  calloutTitle: { fontSize: 14, fontWeight: '900', color: '#1E293B', marginBottom: 2 },
   calloutEmployer: { fontSize: 10, fontWeight: '700', color: '#94A3B8' },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   calloutSalary: { fontSize: 16, fontWeight: '900', color: '#10B981' },
   distText: { fontSize: 10, fontWeight: '800', color: '#CBD5E1' },
-  applyBtnBox: { height: 44, borderRadius: 12, overflow: 'hidden' },
+  applyBtnBox: { height: 48, borderRadius: 14, overflow: 'hidden' },
   applyBtnInner: { width: '100%', height: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   applyBtnText: { fontSize: 10, fontWeight: '900', color: '#FFF', letterSpacing: 0.5 },
 });
