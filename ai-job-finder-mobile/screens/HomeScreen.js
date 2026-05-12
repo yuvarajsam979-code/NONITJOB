@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, SafeAreaView, StatusBar, TouchableOpacity, RefreshControl, TextInput, Animated } from 'react-native';
-import { Search, MapPin, Mic, Sparkles, IndianRupee, Clock } from 'lucide-react-native';
+import { View, Text, ScrollView, SafeAreaView, StatusBar, TouchableOpacity, RefreshControl, TextInput, Animated, StyleSheet, Dimensions } from 'react-native';
+import { Search, MapPin, Mic, Sparkles, IndianRupee, Clock, Zap, Star, Briefcase, Filter, ChevronRight, LayoutGrid } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import JobCard from '../components/JobCard';
 import MapSection from '../components/MapSection';
 import SkeletonCard from '../components/SkeletonCard';
+
+const { width } = Dimensions.get('window');
 
 function HomeScreen({ 
   jobs, loading, fetchJobs, language, setLanguage, onVoicePress, onJobPress, 
@@ -14,15 +16,31 @@ function HomeScreen({
   const [sortMode, setSortMode] = useState('Newest'); 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const greetingAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
+      Animated.spring(greetingAnim, { toValue: 1, tension: 20, friction: 7, useNativeDriver: true }),
     ]).start();
   }, []);
 
   const categories = ['All', ...new Set(jobs.map(j => j.category))];
+  
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  const categoryIcons = {
+    'All': <LayoutGrid size={18} color="#2563EB" />,
+    'Driver': <Briefcase size={18} color="#2563EB" />,
+    'Electrician': <Zap size={18} color="#2563EB" />,
+    'Security': <ShieldCheck size={18} color="#2563EB" />
+  };
 
   const filteredJobs = jobs.filter(job => {
     const query = searchQuery.toLowerCase();
@@ -45,44 +63,46 @@ function HomeScreen({
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
+      {/* Elite Header */}
       <View style={styles.premiumHeader}>
-        <View style={styles.headerTop}>
+        <Animated.View style={[styles.headerTop, { opacity: greetingAnim, transform: [{ scale: greetingAnim }] }]}>
           <View>
-            <Text style={styles.headerLocLabel}>YOUR LOCATION</Text>
-            <View style={styles.headerLocRow}>
-              <MapPin size={16} color="#2563EB" />
-              <Text style={styles.headerLocText}>Chennai, Tamil Nadu</Text>
-            </View>
+            <Text style={styles.greetingText}>{getGreeting()},</Text>
+            <Text style={styles.userName}>Yuvaraj Sam 👋</Text>
           </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              onPress={() => setSortMode(sortMode === 'Newest' ? 'Salary' : 'Newest')}
-              style={[styles.sortBtn, sortMode === 'Salary' && styles.sortBtnActive]}
-            >
-              {sortMode === 'Salary' ? (
-                <IndianRupee size={14} color="#FFF" />
-              ) : (
-                <Clock size={14} color="#2563EB" />
-              )}
-              <Text style={[styles.sortBtnText, sortMode === 'Salary' && styles.sortBtnTextActive]}>
-                {sortMode === 'Salary' ? 'HIGH PAY' : 'NEWEST'}
-              </Text>
+          <TouchableOpacity style={styles.profileBtn}>
+            <LinearGradient colors={['#F1F5F9', '#E2E8F0']} style={styles.profileBtnInner}>
+              <Filter size={20} color="#1E293B" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Search size={22} color="#94A3B8" />
+            <TextInput 
+              placeholder="Search 'Driver', 'Helper'..." 
+              style={styles.searchInput}
+              placeholderTextColor="#94A3B8"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <TouchableOpacity style={styles.voiceIconBox} onPress={onVoicePress}>
+              <Mic size={22} color="#2563EB" />
+              <View style={styles.voicePulse} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.searchBar}>
-          <Search size={22} color="#94A3B8" />
-          <TextInput 
-            placeholder="Search 'Driver', 'Helper'..." 
-            style={styles.searchInput}
-            placeholderTextColor="#94A3B8"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <TouchableOpacity style={styles.voiceIconBox} onPress={onVoicePress}>
-            <View style={styles.voicePulse} />
-            <Mic size={22} color="#2563EB" />
+        {/* Dynamic Location Bar */}
+        <View style={styles.locationBar}>
+          <View style={styles.locLeft}>
+            <MapPin size={14} color="#2563EB" />
+            <Text style={styles.locText}>Chennai, Tamil Nadu</Text>
+          </View>
+          <TouchableOpacity onPress={() => setSortMode(sortMode === 'Newest' ? 'Salary' : 'Newest')} style={styles.sortToggle}>
+            <Text style={styles.sortText}>{sortMode === 'Salary' ? 'HIGH PAY' : 'NEWEST'}</Text>
+            <ChevronRight size={14} color="#64748B" />
           </TouchableOpacity>
         </View>
       </View>
@@ -92,50 +112,74 @@ function HomeScreen({
         contentContainerStyle={styles.feedContent}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
       >
-        <View style={styles.mapConnectionBox}>
-          <Text style={styles.sectionTitle}>Jobs Near You (Map View)</Text>
-          <View style={styles.mapInner}>
+        {/* Interactive Map Entry */}
+        <View style={styles.mapSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Explore Nearby Jobs</Text>
+            <TouchableOpacity style={styles.viewAllBtn}>
+              <Text style={styles.viewAllText}>LIVE MAP</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.mapContainer}>
             <MapSection jobs={filteredJobs} onJobPress={onJobPress} />
           </View>
         </View>
 
-        <View style={styles.categorySection}>
+        {/* AI Quick Tips Marquee (Mock) */}
+        <View style={styles.tipMarquee}>
+          <Zap size={14} color="#F59E0B" />
+          <Text style={styles.tipText}>PRO TIP: Verified profiles get 3x more interview calls!</Text>
+        </View>
+
+        {/* Horizontal Category Flow */}
+        <View style={styles.categoryFlow}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {categories.map((cat) => (
               <TouchableOpacity 
                 key={cat} 
                 onPress={() => setSelectedCategory(cat)}
-                style={[styles.catPill, selectedCategory === cat && styles.catPillActive]}
+                style={[styles.catCard, selectedCategory === cat && styles.catCardActive]}
               >
-                <Text style={[styles.catPillText, selectedCategory === cat && styles.catPillTextActive]}>{cat}</Text>
+                <View style={[styles.catIconBox, selectedCategory === cat && styles.catIconBoxActive]}>
+                  {categoryIcons[cat] || <Briefcase size={18} color={selectedCategory === cat ? '#FFF' : '#2563EB'} />}
+                </View>
+                <Text style={[styles.catCardText, selectedCategory === cat && styles.catCardTextActive]}>{cat}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
 
-        <View style={styles.aiSection}>
-          <View style={styles.aiLabel}>
-            <Sparkles size={16} color="#2563EB" />
-            <Text style={styles.aiLabelText}>AI MATCHES FOR YOU</Text>
+        {/* AI Recommendations */}
+        <View style={styles.aiRecommend}>
+          <View style={styles.aiHeader}>
+            <Sparkles size={18} color="#2563EB" />
+            <Text style={styles.aiTitle}>AI Top Matches</Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.aiScroll}>
             {jobs.length > 0 ? jobs.slice(0, 3).map((job, i) => (
-              <TouchableOpacity key={i} style={styles.aiCard} onPress={() => onJobPress(job)}>
-                <LinearGradient colors={['#F0F7FF', '#FFF']} style={styles.aiCardInner}>
-                  <Text style={styles.aiJobTitle}>{job.title}</Text>
-                  <Text style={styles.aiJobSalary}>{job.salary}</Text>
-                  <View style={styles.aiMatchBadge}>
-                    <Text style={styles.aiMatchText}>98% MATCH</Text>
+              <TouchableOpacity key={i} style={styles.aiMatchCard} onPress={() => onJobPress(job)}>
+                <LinearGradient colors={['#F8FAFC', '#FFF']} style={styles.aiMatchInner}>
+                  <Text style={styles.aiJobTitle} numberOfLines={1}>{job.title}</Text>
+                  <View style={styles.aiSalaryRow}>
+                    <IndianRupee size={12} color="#10B981" />
+                    <Text style={styles.aiSalaryText}>{job.salary?.match(/\d+/)?.[0] || '15'}K</Text>
+                  </View>
+                  <View style={styles.matchTag}>
+                    <Text style={styles.matchTagText}>98% FIT</Text>
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
-            )) : <View style={styles.aiCard}><Text style={styles.aiCardEmpty}>Searching matches...</Text></View>}
+            )) : <View style={styles.aiCardEmpty}><Text>Searching...</Text></View>}
           </ScrollView>
         </View>
 
-        <Text style={styles.sectionTitle}>
-          {selectedCategory === 'All' ? 'Jobs Near You' : `${selectedCategory} Jobs`}
-        </Text>
+        {/* Main Job Feed */}
+        <View style={styles.feedHeader}>
+          <Text style={styles.sectionTitle}>
+            {selectedCategory === 'All' ? 'Available Jobs' : `${selectedCategory} Jobs`}
+          </Text>
+          <Text style={styles.countText}>{filteredJobs.length} Results</Text>
+        </View>
         
         {loading ? (
           <SkeletonCard />
@@ -144,9 +188,9 @@ function HomeScreen({
             <JobCard key={job._id || Math.random()} job={job} onPress={() => onJobPress(job)} />
           ))
         ) : (
-          <View style={styles.emptyState}>
-            <Search size={48} color="#E2E8F0" />
-            <Text style={styles.emptyText}>No jobs found for this search.</Text>
+          <View style={styles.emptyFeed}>
+            <Search size={60} color="#E2E8F0" />
+            <Text style={styles.emptyFeedText}>No jobs matching your criteria.</Text>
           </View>
         )}
       </Animated.ScrollView>
@@ -154,43 +198,56 @@ function HomeScreen({
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
-  premiumHeader: { padding: 25, backgroundColor: '#FFF', borderBottomLeftRadius: 32, borderBottomRightRadius: 32, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 15, elevation: 5 },
+  premiumHeader: { backgroundColor: '#FFF', paddingHorizontal: 25, paddingTop: 20, paddingBottom: 25, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 20, elevation: 10 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  headerLocLabel: { fontSize: 10, fontWeight: '900', color: '#94A3B8', letterSpacing: 1, marginBottom: 4 },
-  headerLocRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  headerLocText: { fontSize: 15, fontWeight: '800', color: '#1E293B' },
-  headerActions: { flexDirection: 'row', gap: 12 },
-  sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#EFF6FF', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#DBEAFE' },
-  sortBtnActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-  sortBtnText: { fontSize: 11, fontWeight: '900', color: '#2563EB' },
-  sortBtnTextActive: { color: '#FFF' },
-  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 20, paddingHorizontal: 15, height: 60, gap: 12 },
-  searchInput: { flex: 1, fontSize: 16, color: '#1E293B', fontWeight: '600' },
-  voiceIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#2563EB', shadowOpacity: 0.1, shadowRadius: 10, elevation: 2 },
-  voicePulse: { position: 'absolute', width: 40, height: 40, borderRadius: 12, backgroundColor: '#2563EB', opacity: 0.1 },
+  greetingText: { fontSize: 13, fontWeight: '700', color: '#94A3B8' },
+  userName: { fontSize: 24, fontWeight: '900', color: '#1E293B', marginTop: 2 },
+  profileBtn: { width: 50, height: 50, borderRadius: 15, overflow: 'hidden' },
+  profileBtnInner: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
+  searchContainer: { marginBottom: 20 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 20, paddingHorizontal: 20, height: 65, gap: 15 },
+  searchInput: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1E293B' },
+  voiceIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#2563EB', shadowOpacity: 0.1, shadowRadius: 10 },
+  voicePulse: { position: 'absolute', width: 44, height: 44, borderRadius: 12, backgroundColor: '#2563EB', opacity: 0.05 },
+  locationBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  locLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  locText: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
+  sortToggle: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  sortText: { fontSize: 10, fontWeight: '900', color: '#64748B', letterSpacing: 1 },
   feed: { flex: 1 },
-  feedContent: { padding: 25, paddingTop: 20 },
-  mapConnectionBox: { marginBottom: 35 },
-  mapInner: { height: 220, borderRadius: 32, overflow: 'hidden', backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 15, elevation: 5, borderWidth: 1, borderColor: '#F1F5F9' },
-  categorySection: { marginBottom: 30 },
-  catPill: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 15, backgroundColor: '#FFF', marginRight: 10, borderWidth: 1, borderColor: '#F1F5F9' },
-  catPillActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-  catPillText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
-  catPillTextActive: { color: '#FFF' },
-  aiSection: { marginBottom: 35 },
-  aiLabel: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 15 },
-  aiLabelText: { fontSize: 12, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
-  aiCard: { width: 220, marginRight: 15, borderRadius: 24, overflow: 'hidden', backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0F7FF' },
-  aiCardInner: { padding: 20 },
-  aiJobTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 4 },
-  aiJobSalary: { fontSize: 13, fontWeight: '700', color: '#10B981', marginBottom: 12 },
-  aiMatchBadge: { alignSelf: 'flex-start', backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#F0F7FF' },
-  aiMatchText: { fontSize: 9, fontWeight: '900', color: '#2563EB' },
-  sectionTitle: { fontSize: 22, fontWeight: '900', color: '#1E293B', marginBottom: 20, letterSpacing: -0.5 },
-  emptyState: { alignItems: 'center', marginTop: 50, gap: 15 },
-  emptyText: { fontSize: 16, color: '#94A3B8', fontWeight: '600' },
-};
+  feedContent: { padding: 25, paddingBottom: 150 },
+  mapSection: { marginBottom: 35 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  sectionTitle: { fontSize: 22, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
+  viewAllBtn: { backgroundColor: '#EFF6FF', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 12 },
+  viewAllText: { fontSize: 10, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
+  mapContainer: { height: 220, borderRadius: 32, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 10 },
+  tipMarquee: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFBEB', padding: 12, borderRadius: 15, marginBottom: 30, borderWidth: 1, borderColor: '#FEF3C7' },
+  tipText: { fontSize: 12, fontWeight: '700', color: '#B45309' },
+  categoryFlow: { marginBottom: 35 },
+  catCard: { width: 100, height: 120, backgroundColor: '#FFF', borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOpacity: 0.02, shadowRadius: 10 },
+  catCardActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
+  catIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  catIconBoxActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
+  catCardText: { fontSize: 12, fontWeight: '800', color: '#64748B' },
+  catCardTextActive: { color: '#FFF' },
+  aiRecommend: { marginBottom: 40 },
+  aiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
+  aiTitle: { fontSize: 12, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
+  aiScroll: { overflow: 'visible' },
+  aiMatchCard: { width: 220, marginRight: 20, borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0', shadowColor: '#2563EB', shadowOpacity: 0.05, shadowRadius: 15 },
+  aiMatchInner: { padding: 20, height: 140, justifyContent: 'space-between' },
+  aiJobTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B' },
+  aiSalaryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  aiSalaryText: { fontSize: 15, fontWeight: '800', color: '#10B981' },
+  matchTag: { backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, alignSelf: 'flex-start' },
+  matchTagText: { fontSize: 10, fontWeight: '900', color: '#10B981' },
+  feedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  countText: { fontSize: 13, fontWeight: '700', color: '#94A3B8' },
+  emptyFeed: { alignItems: 'center', paddingVertical: 80, gap: 20, opacity: 0.5 },
+  emptyFeedText: { fontSize: 16, fontWeight: '600', color: '#64748B' }
+});
 
 export default HomeScreen;
