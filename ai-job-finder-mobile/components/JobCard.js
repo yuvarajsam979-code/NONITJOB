@@ -1,109 +1,92 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
-import { Phone, MessageCircle } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
+import { Phone, MessageCircle, ShieldCheck, MapPin } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const JobCard = ({ job }) => {
-  const handleCall = () => {
-    Linking.openURL(`tel:${job.employer.contact}`);
-  };
-
-  const handleWhatsApp = () => {
-    const message = `Hello, I saw your job posting for ${job.title} on AI Job Finder. I am interested.`;
-    Linking.openURL(`whatsapp://send?phone=${job.employer.contact}&text=${message}`);
-  };
+const JobCard = ({ job, onPress }) => {
+  const handleCall = () => Linking.openURL(`tel:${job.employer.contact}`);
+  const handleWhatsApp = () => Linking.openURL(`whatsapp://send?phone=91${job.employer.contact}&text=Hi, I am interested in your job: ${job.title}`);
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{job.title}</Text>
-        <Text style={styles.salary}>{job.salary || 'Contact for Salary'}</Text>
+    <TouchableOpacity activeOpacity={0.95} onPress={onPress} style={styles.cardContainer}>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <View style={styles.titleBox}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title} numberOfLines={1}>{job.title}</Text>
+              <View style={styles.verifiedBadge}>
+                <ShieldCheck size={12} color="#2563EB" />
+              </View>
+            </View>
+            <View style={styles.locRow}>
+              <MapPin size={12} color="#94A3B8" />
+              <Text style={styles.locText}>{job.location.address || 'Chennai'}</Text>
+            </View>
+          </View>
+          <View style={styles.salaryBox}>
+            <Text style={styles.salaryText}>{job.salary?.split('/')[0] || '15K'}</Text>
+            <Text style={styles.salaryLabel}>PER MONTH</Text>
+          </View>
+        </View>
+
+        <View style={styles.tagRow}>
+          <View style={styles.tag}><Text style={styles.tagText}>IMMEDIATE</Text></View>
+          <View style={styles.tag}><Text style={styles.tagText}>FREE FOOD</Text></View>
+        </View>
+
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
+            <Phone size={18} color="#1E293B" />
+            <Text style={styles.callBtnText}>CALL</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.waBtn} onPress={handleWhatsApp}>
+            <LinearGradient colors={['#22C55E', '#15803D']} style={styles.waBtnInner}>
+              <MessageCircle size={18} color="#FFF" />
+              <Text style={styles.waBtnText}>WHATSAPP</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
-      
-      <Text style={styles.category}>{job.category}</Text>
-      <Text style={styles.description} numberOfLines={2}>
-        {job.description}
-      </Text>
-      
-      <View style={styles.actions}>
-        <TouchableOpacity style={[styles.button, styles.callBtn]} onPress={handleCall}>
-          <Phone size={20} color="#FFF" />
-          <Text style={styles.buttonText}>Call</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={[styles.button, styles.waBtn]} onPress={handleWhatsApp}>
-          <MessageCircle size={20} color="#FFF" />
-          <Text style={styles.buttonText}>WhatsApp</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    marginBottom: 25,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.08,
+    shadowRadius: 25,
+    elevation: 10,
+  },
   card: {
     backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: 32,
+    padding: 25,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
-  salary: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2E5BFF',
-  },
-  category: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  description: {
-    fontSize: 14,
-    color: '#444',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    flexDirection: 'row',
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  callBtn: {
-    backgroundColor: '#2E5BFF',
-  },
-  waBtn: {
-    backgroundColor: '#25D366',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  titleBox: { flex: 1, marginRight: 15 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  title: { fontSize: 20, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
+  verifiedBadge: { backgroundColor: '#EFF6FF', padding: 4, borderRadius: 8 },
+  locRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  locText: { fontSize: 13, color: '#64748B', fontWeight: '600' },
+  salaryBox: { alignItems: 'flex-end', backgroundColor: '#F0FDF4', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 15 },
+  salaryText: { fontSize: 18, fontWeight: '900', color: '#10B981' },
+  salaryLabel: { fontSize: 8, fontWeight: '900', color: '#10B981', letterSpacing: 1 },
+  tagRow: { flexDirection: 'row', gap: 8, marginBottom: 25 },
+  tag: { backgroundColor: '#F8FAFC', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: '#F1F5F9' },
+  tagText: { fontSize: 9, fontWeight: '900', color: '#94A3B8', letterSpacing: 0.5 },
+  footer: { flexDirection: 'row', gap: 12 },
+  callBtn: { flex: 1, height: 56, borderRadius: 20, backgroundColor: '#F1F5F9', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 },
+  callBtnText: { fontSize: 14, fontWeight: '900', color: '#1E293B', letterSpacing: 0.5 },
+  waBtn: { flex: 1.5, height: 56, borderRadius: 20, overflow: 'hidden' },
+  waBtnInner: { width: '100%', height: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 },
+  waBtnText: { fontSize: 14, fontWeight: '900', color: '#FFF', letterSpacing: 0.5 },
 });
 
 export default JobCard;
