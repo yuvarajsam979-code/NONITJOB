@@ -2,18 +2,28 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 // Your web app's Firebase configuration
-// Replace these with your actual keys from Firebase Console
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "your-app.firebaseapp.com",
-  projectId: "your-app",
-  storageBucket: "your-app.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
+  apiKey: "YOUR_API_KEY", 
+  authDomain: "sunny-sandbox-472406-c4.firebaseapp.com",
+  projectId: "sunny-sandbox-472406-c4",
+  storageBucket: "sunny-sandbox-472406-c4.appspot.com",
+  messagingSenderId: "445019190074",
+  appId: "YOUR_APP_ID" 
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Safe Initialization
+let app;
+let auth;
 
-// Initialize Firebase Auth
-export const auth = getAuth(app);
+try {
+  if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+  } else {
+    console.warn("Firebase: Running in Demo Mode (No API Key provided)");
+  }
+} catch (error) {
+  console.error("Firebase Initialization Error:", error);
+}
+
+export { auth };

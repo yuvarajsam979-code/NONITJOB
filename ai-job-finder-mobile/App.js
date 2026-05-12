@@ -19,6 +19,7 @@ import JobDetailsScreen from './screens/JobDetailsScreen';
 import AIChatScreen from './screens/AIChatScreen';
 import EmployerDashboard from './screens/EmployerDashboard';
 import HomeScreen from './screens/HomeScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
