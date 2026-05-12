@@ -7,24 +7,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 const MapSection = ({ jobs = [], onJobPress }) => {
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0.5)).current;
-  const entranceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Sonar Pulse
     Animated.loop(
       Animated.parallel([
         Animated.timing(pulseAnim, { toValue: 3, duration: 2000, useNativeDriver: true }),
         Animated.timing(opacityAnim, { toValue: 0, duration: 2000, useNativeDriver: true }),
       ])
     ).start();
-
-    // Staggered Entrance
-    Animated.spring(entranceAnim, {
-      toValue: 1,
-      tension: 50,
-      friction: 7,
-      useNativeDriver: true
-    }).start();
   }, []);
 
   const handleWhatsApp = (job) => {
@@ -49,78 +39,85 @@ const MapSection = ({ jobs = [], onJobPress }) => {
     return { color: '#64748B', icon: MapPin };
   };
 
+  // Custom Marker with Individual Animation
+  const AnimatedMarker = ({ job, index, config }) => {
+    const enterAnim = useRef(new Animated.Value(0)).current;
+    const IconComp = config.icon;
+
+    useEffect(() => {
+      Animated.spring(enterAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 8,
+        delay: index * 100, // Cascading effect
+        useNativeDriver: true
+      }).start();
+    }, []);
+
+    return (
+      <Marker
+        coordinate={{
+          latitude: job.location?.latitude || (13.08 + Math.random() * 0.05),
+          longitude: job.location?.longitude || (80.27 + Math.random() * 0.05),
+        }}
+      >
+        <Animated.View style={[
+          styles.markerWrapper, 
+          { transform: [{ scale: enterAnim }], opacity: enterAnim }
+        ]}>
+          <Animated.View style={[
+            styles.sonarRing, 
+            { backgroundColor: config.color, opacity: opacityAnim, transform: [{ scale: pulseAnim }] }
+          ]} />
+          <View style={[styles.markerCircle, { backgroundColor: config.color }]}>
+            <IconComp size={10} color="#FFF" />
+          </View>
+        </Animated.View>
+        
+        <Callout tooltip onPress={() => onJobPress && onJobPress(job)}>
+          <View style={styles.callout}>
+            <View style={styles.calloutHeader}>
+              <View style={styles.employerIcon}>
+                <Text style={styles.employerInitial}>{job.employer?.name?.charAt(0) || 'R'}</Text>
+              </View>
+              <View style={styles.headerText}>
+                <Text style={styles.calloutTitle} numberOfLines={1}>{job.title}</Text>
+                <Text style={styles.calloutEmployer}>{job.employer?.name || 'Local Business'}</Text>
+              </View>
+            </View>
+
+            <View style={styles.aiRow}>
+              <Sparkles size={10} color="#2563EB" />
+              <Text style={styles.aiMatchText}>98% AI MATCH</Text>
+              <View style={styles.matchDot} />
+              <Text style={styles.distText}>2.4 KM</Text>
+            </View>
+            
+            <Text style={styles.calloutSalary}>{job.salary}</Text>
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity style={styles.waBtn} onPress={() => handleWhatsApp(job)}>
+                <MessageCircle size={16} color="#22C55E" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.applyBtn}>
+                <LinearGradient colors={['#2563EB', '#1D4ED8']} style={styles.applyBtnInner}>
+                  <Text style={styles.applyBtnText}>VIEW & APPLY</Text>
+                  <ChevronRight size={10} color="#FFF" />
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Callout>
+      </Marker>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <MapView style={styles.map} initialRegion={region}>
-        {jobs.map((job, index) => {
-          const config = getCategoryConfig(job.category);
-          const IconComp = config.icon;
-          
-          return (
-            <Marker
-              key={job._id || Math.random()}
-              coordinate={{
-                latitude: job.location?.latitude || (13.08 + Math.random() * 0.05),
-                longitude: job.location?.longitude || (80.27 + Math.random() * 0.05),
-              }}
-            >
-              <Animated.View style={[
-                styles.markerWrapper, 
-                { 
-                  transform: [{ scale: entranceAnim }],
-                  opacity: entranceAnim 
-                }
-              ]}>
-                <Animated.View style={[
-                  styles.sonarRing, 
-                  { 
-                    backgroundColor: config.color,
-                    opacity: opacityAnim,
-                    transform: [{ scale: pulseAnim }] 
-                  }
-                ]} />
-                <View style={[styles.markerCircle, { backgroundColor: config.color }]}>
-                  <IconComp size={10} color="#FFF" />
-                </View>
-              </Animated.View>
-              
-              <Callout tooltip onPress={() => onJobPress && onJobPress(job)}>
-                <View style={styles.callout}>
-                  <View style={styles.calloutHeader}>
-                    <View style={styles.employerIcon}>
-                      <Text style={styles.employerInitial}>{job.employer?.name?.charAt(0) || 'R'}</Text>
-                    </View>
-                    <View style={styles.headerText}>
-                      <Text style={styles.calloutTitle} numberOfLines={1}>{job.title}</Text>
-                      <Text style={styles.calloutEmployer}>{job.employer?.name || 'Local Business'}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.aiRow}>
-                    <Sparkles size={10} color="#2563EB" />
-                    <Text style={styles.aiMatchText}>98% AI MATCH</Text>
-                    <View style={styles.matchDot} />
-                    <Text style={styles.distText}>2.4 KM</Text>
-                  </View>
-                  
-                  <Text style={styles.calloutSalary}>{job.salary}</Text>
-
-                  <View style={styles.actionRow}>
-                    <TouchableOpacity style={styles.waBtn} onPress={() => handleWhatsApp(job)}>
-                      <MessageCircle size={16} color="#22C55E" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.applyBtn}>
-                      <LinearGradient colors={['#2563EB', '#1D4ED8']} style={styles.applyBtnInner}>
-                        <Text style={styles.applyBtnText}>VIEW & APPLY</Text>
-                        <ChevronRight size={10} color="#FFF" />
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </Callout>
-            </Marker>
-          );
-        })}
+        {jobs.map((job, i) => (
+          <AnimatedMarker key={job._id || i} job={job} index={i} config={getCategoryConfig(job.category)} />
+        ))}
       </MapView>
     </View>
   );
