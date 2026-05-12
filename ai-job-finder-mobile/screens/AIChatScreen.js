@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Animated } from 'react-native';
-import { Send, X, Sparkles, User, Mic } from 'lucide-react-native';
+import { Send, X, Sparkles, User, Mic, ChevronRight } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const AIChatScreen = ({ onClose }) => {
@@ -160,17 +160,20 @@ const AIChatScreen = ({ onClose }) => {
             <View style={styles.inputBox}>
               <TextInput 
                 style={styles.input}
-                placeholder="Ask me anything..."
+                placeholder="Ask Rozgar AI anything..."
                 value={input}
                 onChangeText={setInput}
                 placeholderTextColor="#94A3B8"
               />
-              <TouchableOpacity style={styles.micBtn}>
-                <Mic size={20} color="#64748B" />
+              <TouchableOpacity style={styles.micIconBox}>
+                <Mic size={20} color="#2563EB" />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={handleSend} style={styles.sendBtn}>
-              <LinearGradient colors={['#2563EB', '#1D4ED8']} style={styles.sendBtnInner}>
+            <TouchableOpacity 
+              style={styles.sendBtn}
+              onPress={() => handleSend()}
+            >
+              <LinearGradient colors={['#3B82F6', '#1D4ED8']} style={styles.sendBtnInner}>
                 <Send size={20} color="#FFF" />
               </LinearGradient>
             </TouchableOpacity>
@@ -222,7 +225,7 @@ const styles = StyleSheet.create({
   },
   inputBox: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 20, paddingHorizontal: 15, height: 56 },
   input: { flex: 1, fontSize: 16, color: '#1E293B', fontWeight: '600' },
-  micBtn: { padding: 5 },
+  micIconBox: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center' },
   sendBtn: { width: 56, height: 56, borderRadius: 20, overflow: 'hidden' },
   sendBtnInner: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
 });

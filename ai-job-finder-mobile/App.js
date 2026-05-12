@@ -144,6 +144,14 @@ function HomeScreen({
         contentContainerStyle={styles.feedContent}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
       >
+        {/* Map View Integration */}
+        <View style={styles.mapConnectionBox}>
+          <Text style={styles.sectionTitle}>Jobs Near You (Map View)</Text>
+          <View style={styles.mapInner}>
+            <MapSection />
+          </View>
+        </View>
+
         <View style={styles.categorySection}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {categories.map((cat) => (
@@ -321,7 +329,13 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 30, elevation: 20
   },
   splashBrand: { fontSize: 48, fontWeight: '900', color: '#FFF', letterSpacing: 4, textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: {width: 0, height: 4}, textShadowRadius: 10 },
-  splashTagline: { fontSize: 18, color: 'rgba(255,255,255,0.9)', fontWeight: '700', letterSpacing: 1 },
+  // --- MAP CONNECTION ---
+  mapConnectionBox: { marginBottom: 35 },
+  mapInner: { 
+    height: 220, borderRadius: 32, overflow: 'hidden', 
+    backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 15, elevation: 5,
+    borderWidth: 1, borderColor: '#F1F5F9'
+  },
 
   // --- ELITE ONBOARDING ---
   onboardContainer: { flex: 1, backgroundColor: '#FFF' },
