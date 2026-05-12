@@ -5,27 +5,74 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const AIChatScreen = ({ onClose }) => {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Namaste! I am your Rozgar AI Assistant. How can I help you find work today?", isAI: true }
+    { id: 1, text: "Namaste! I am your Rozgar AI Assistant. Would you like to start a 1-minute Quick Interview to find the best jobs?", isAI: true, isAction: true }
   ]);
   const [input, setInput] = useState('');
+  const [isInterviewing, setIsInterviewing] = useState(false);
+  const [step, setStep] = useState(0);
   const scrollRef = useRef();
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const interviewSteps = [
+    { 
+      q: "Great! What kind of work are you looking for?", 
+      choices: ["Driver", "Electrician", "Maid", "Security", "Delivery"] 
+    },
+    { 
+      q: "Understood. How many years of experience do you have?", 
+      choices: ["0-1 Year", "1-3 Years", "3-5 Years", "5+ Years"] 
+    },
+    { 
+      q: "Perfect. Where in Chennai do you prefer to work?", 
+      choices: ["Velachery", "Adyar", "T. Nagar", "Porur", "Anywhere"] 
+    },
+    { 
+      q: "Last question, when can you join?", 
+      choices: ["Immediately", "Next Week", "After 15 Days"] 
+    }
+  ];
+
+  const handleSend = (overrideText = null) => {
+    const textToSend = overrideText || input;
+    if (!textToSend.trim()) return;
     
-    const userMsg = { id: Date.now(), text: input, isAI: false };
+    const userMsg = { id: Date.now(), text: textToSend, isAI: false };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
 
-    // Mock AI Response
-    setTimeout(() => {
-      const aiMsg = { 
-        id: Date.now() + 1, 
-        text: "I found 3 Driver jobs in your area with daily payments. Would you like to see them?", 
-        isAI: true 
-      };
-      setMessages(prev => [...prev, aiMsg]);
-    }, 1000);
+    if (isInterviewing) {
+      handleInterviewFlow(textToSend);
+    } else {
+      setTimeout(() => {
+        const aiMsg = { id: Date.now() + 1, text: "I'm searching for jobs based on your request...", isAI: true };
+        setMessages(prev => [...prev, aiMsg]);
+      }, 1000);
+    }
+  };
+
+  const handleInterviewFlow = (userResponse) => {
+    const nextStep = step + 1;
+    if (nextStep < interviewSteps.length) {
+      setTimeout(() => {
+        const next = interviewSteps[nextStep];
+        const aiMsg = { id: Date.now() + 1, text: next.q, isAI: true, choices: next.choices };
+        setMessages(prev => [...prev, aiMsg]);
+        setStep(nextStep);
+      }, 800);
+    } else {
+      setTimeout(() => {
+        const aiMsg = { id: Date.now() + 1, text: "Dhanyawad! Profile Updated. I found 5 matching jobs for you. Check them out!", isAI: true };
+        setMessages(prev => [...prev, aiMsg]);
+        setIsInterviewing(false);
+      }, 1200);
+    }
+  };
+
+  const startInterview = () => {
+    setIsInterviewing(true);
+    setStep(0);
+    const first = interviewSteps[0];
+    const aiMsg = { id: Date.now(), text: first.q, isAI: true, choices: first.choices };
+    setMessages(prev => [...prev, aiMsg]);
   };
 
   useEffect(() => {
@@ -51,6 +98,13 @@ const AIChatScreen = ({ onClose }) => {
           </TouchableOpacity>
         </View>
 
+        {/* Progress Bar */}
+        {isInterviewing && (
+          <View style={styles.progressContainer}>
+            <View style={[styles.progressBar, { width: `${((step + 1) / interviewSteps.length) * 100}%` }]} />
+          </View>
+        )}
+
         {/* Chat Area */}
         <ScrollView 
           ref={scrollRef}
@@ -68,6 +122,25 @@ const AIChatScreen = ({ onClose }) => {
                 <Text style={[styles.msgText, msg.isAI ? styles.aiText : styles.userText]}>
                   {msg.text}
                 </Text>
+                
+                {msg.isAI && msg.isAction && !isInterviewing && (
+                  <TouchableOpacity style={styles.actionBtn} onPress={startInterview}>
+                    <LinearGradient colors={['#2563EB', '#1E3A8A']} style={styles.actionBtnInner}>
+                      <Text style={styles.actionBtnText}>START INTERVIEW</Text>
+                      <ChevronRight size={14} color="#FFF" />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )}
+
+                {msg.isAI && msg.choices && isInterviewing && msg.id === messages[messages.length-1].id && (
+                  <View style={styles.choiceBox}>
+                    {msg.choices.map((c, i) => (
+                      <TouchableOpacity key={i} style={styles.choiceChip} onPress={() => handleSend(c)}>
+                        <Text style={styles.choiceChipText}>{c}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
               {!msg.isAI && (
                 <View style={[styles.msgAvatar, styles.userAvatar]}>
@@ -133,6 +206,16 @@ const styles = StyleSheet.create({
   msgText: { fontSize: 15, lineHeight: 22 },
   aiText: { color: '#1E293B', fontWeight: '500' },
   userText: { color: '#FFF', fontWeight: '500' },
+  actionBtn: { marginTop: 15, borderRadius: 12, overflow: 'hidden' },
+  actionBtnInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 20, gap: 8 },
+  actionBtnText: { color: '#FFF', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+
+  progressContainer: { height: 4, backgroundColor: '#F1F5F9', width: '100%' },
+  progressBar: { height: '100%', backgroundColor: '#2563EB' },
+  choiceBox: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 15 },
+  choiceChip: { paddingHorizontal: 15, paddingVertical: 10, borderRadius: 12, backgroundColor: '#F1F5F9', borderWidth: 1, borderColor: '#E2E8F0' },
+  choiceChipText: { fontSize: 13, fontWeight: '700', color: '#1E293B' },
+
   inputSection: { 
     flexDirection: 'row', padding: 20, gap: 12, backgroundColor: '#FFF', 
     borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: Platform.OS === 'ios' ? 40 : 20 
