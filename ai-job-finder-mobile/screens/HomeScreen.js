@@ -7,7 +7,7 @@ import JobCard from '../components/JobCard';
 import MapSection from '../components/MapSection';
 import SkeletonCard from '../components/SkeletonCard';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 function HomeScreen({ 
   jobs, loading, fetchJobs, language, setLanguage, onVoicePress, onJobPress, 
@@ -16,13 +16,25 @@ function HomeScreen({
   const [sortMode, setSortMode] = useState('Newest'); 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-  const greetingAnim = useRef(new Animated.Value(0)).current;
+  const orb1Anim = useRef(new Animated.Value(0)).current;
+  const orb2Anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
-      Animated.spring(greetingAnim, { toValue: 1, tension: 20, friction: 7, useNativeDriver: true }),
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(orb1Anim, { toValue: 20, duration: 4000, useNativeDriver: true }),
+          Animated.timing(orb1Anim, { toValue: 0, duration: 4000, useNativeDriver: true }),
+        ])
+      ).start(),
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(orb2Anim, { toValue: -20, duration: 5000, useNativeDriver: true }),
+          Animated.timing(orb2Anim, { toValue: 0, duration: 5000, useNativeDriver: true }),
+        ])
+      ).start()
     ]).start();
   }, []);
 
@@ -39,7 +51,7 @@ function HomeScreen({
     'All': <LayoutGrid size={18} color="#2563EB" />,
     'Driver': <Briefcase size={18} color="#2563EB" />,
     'Electrician': <Zap size={18} color="#2563EB" />,
-    'Security': <ShieldCheck size={18} color="#2563EB" />
+    'Security': <Shield size={18} color="#2563EB" />
   };
 
   const filteredJobs = jobs.filter(job => {
@@ -60,147 +72,154 @@ function HomeScreen({
   });
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* Elite Header */}
-      <View style={styles.premiumHeader}>
-        <Animated.View style={[styles.headerTop, { opacity: greetingAnim, transform: [{ scale: greetingAnim }] }]}>
-          <View>
-            <Text style={styles.greetingText}>{getGreeting()},</Text>
-            <Text style={styles.userName}>Yuvaraj Sam 👋</Text>
-          </View>
-          <TouchableOpacity style={styles.profileBtn}>
-            <LinearGradient colors={['#F1F5F9', '#E2E8F0']} style={styles.profileBtnInner}>
-              <Filter size={20} color="#1E293B" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
-
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Search size={22} color="#94A3B8" />
-            <TextInput 
-              placeholder="Search 'Driver', 'Helper'..." 
-              style={styles.searchInput}
-              placeholderTextColor="#94A3B8"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            <TouchableOpacity style={styles.voiceIconBox} onPress={onVoicePress}>
-              <Mic size={22} color="#2563EB" />
-              <View style={styles.voicePulse} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Dynamic Location Bar */}
-        <View style={styles.locationBar}>
-          <View style={styles.locLeft}>
-            <MapPin size={14} color="#2563EB" />
-            <Text style={styles.locText}>Chennai, Tamil Nadu</Text>
-          </View>
-          <TouchableOpacity onPress={() => setSortMode(sortMode === 'Newest' ? 'Salary' : 'Newest')} style={styles.sortToggle}>
-            <Text style={styles.sortText}>{sortMode === 'Salary' ? 'HIGH PAY' : 'NEWEST'}</Text>
-            <ChevronRight size={14} color="#64748B" />
-          </TouchableOpacity>
-        </View>
+      {/* ELITE MESH BACKGROUND */}
+      <View style={StyleSheet.absoluteFill}>
+        <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={StyleSheet.absoluteFill} />
+        <Animated.View style={[styles.orb, styles.orb1, { transform: [{ translateY: orb1Anim }] }]} />
+        <Animated.View style={[styles.orb, styles.orb2, { transform: [{ translateX: orb2Anim }] }]} />
       </View>
 
-      <Animated.ScrollView 
-        style={[styles.feed, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]} 
-        contentContainerStyle={styles.feedContent}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
-      >
-        {/* Interactive Map Entry */}
-        <View style={styles.mapSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Explore Nearby Jobs</Text>
-            <TouchableOpacity style={styles.viewAllBtn}>
-              <Text style={styles.viewAllText}>LIVE MAP</Text>
+      <SafeAreaView style={{ flex: 1 }}>
+        {/* Elite Header */}
+        <View style={styles.premiumHeader}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.greetingText}>{getGreeting()},</Text>
+              <Text style={styles.userName}>Yuvaraj Sam 👋</Text>
+            </View>
+            <TouchableOpacity style={styles.profileBtn}>
+              <LinearGradient colors={['#F1F5F9', '#E2E8F0']} style={styles.profileBtnInner}>
+                <Filter size={20} color="#1E293B" />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
-          <View style={styles.mapContainer}>
-            <MapSection jobs={filteredJobs} onJobPress={onJobPress} />
-          </View>
-        </View>
 
-        {/* AI Quick Tips Marquee (Mock) */}
-        <View style={styles.tipMarquee}>
-          <Zap size={14} color="#F59E0B" />
-          <Text style={styles.tipText}>PRO TIP: Verified profiles get 3x more interview calls!</Text>
-        </View>
-
-        {/* Horizontal Category Flow */}
-        <View style={styles.categoryFlow}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categories.map((cat) => (
-              <TouchableOpacity 
-                key={cat} 
-                onPress={() => setSelectedCategory(cat)}
-                style={[styles.catCard, selectedCategory === cat && styles.catCardActive]}
-              >
-                <View style={[styles.catIconBox, selectedCategory === cat && styles.catIconBoxActive]}>
-                  {categoryIcons[cat] || <Briefcase size={18} color={selectedCategory === cat ? '#FFF' : '#2563EB'} />}
-                </View>
-                <Text style={[styles.catCardText, selectedCategory === cat && styles.catCardTextActive]}>{cat}</Text>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Search size={22} color="#94A3B8" />
+              <TextInput 
+                placeholder="Search 'Driver', 'Helper'..." 
+                style={styles.searchInput}
+                placeholderTextColor="#94A3B8"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              <TouchableOpacity style={styles.voiceIconBox} onPress={onVoicePress}>
+                <Mic size={22} color="#2563EB" />
+                <View style={styles.voicePulse} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+          </View>
+
+          <View style={styles.locationBar}>
+            <View style={styles.locLeft}>
+              <MapPin size={14} color="#2563EB" />
+              <Text style={styles.locText}>Chennai, Tamil Nadu</Text>
+            </View>
+            <TouchableOpacity onPress={() => setSortMode(sortMode === 'Newest' ? 'Salary' : 'Newest')} style={styles.sortToggle}>
+              <Text style={styles.sortText}>{sortMode === 'Salary' ? 'HIGH PAY' : 'NEWEST'}</Text>
+              <ChevronRight size={14} color="#64748B" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* AI Recommendations */}
-        <View style={styles.aiRecommend}>
-          <View style={styles.aiHeader}>
-            <Sparkles size={18} color="#2563EB" />
-            <Text style={styles.aiTitle}>AI Top Matches</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.aiScroll}>
-            {jobs.length > 0 ? jobs.slice(0, 3).map((job, i) => (
-              <TouchableOpacity key={i} style={styles.aiMatchCard} onPress={() => onJobPress(job)}>
-                <LinearGradient colors={['#F8FAFC', '#FFF']} style={styles.aiMatchInner}>
-                  <Text style={styles.aiJobTitle} numberOfLines={1}>{job.title}</Text>
-                  <View style={styles.aiSalaryRow}>
-                    <IndianRupee size={12} color="#10B981" />
-                    <Text style={styles.aiSalaryText}>{job.salary?.match(/\d+/)?.[0] || '15'}K</Text>
-                  </View>
-                  <View style={styles.matchTag}>
-                    <Text style={styles.matchTagText}>98% FIT</Text>
-                  </View>
-                </LinearGradient>
+        <Animated.ScrollView 
+          style={[styles.feed, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]} 
+          contentContainerStyle={styles.feedContent}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
+        >
+          {/* Content sections same as before but now over the mesh background */}
+          <View style={styles.mapSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Explore Nearby Jobs</Text>
+              <TouchableOpacity style={styles.viewAllBtn}>
+                <Text style={styles.viewAllText}>LIVE MAP</Text>
               </TouchableOpacity>
-            )) : <View style={styles.aiCardEmpty}><Text>Searching...</Text></View>}
-          </ScrollView>
-        </View>
-
-        {/* Main Job Feed */}
-        <View style={styles.feedHeader}>
-          <Text style={styles.sectionTitle}>
-            {selectedCategory === 'All' ? 'Available Jobs' : `${selectedCategory} Jobs`}
-          </Text>
-          <Text style={styles.countText}>{filteredJobs.length} Results</Text>
-        </View>
-        
-        {loading ? (
-          <SkeletonCard />
-        ) : filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => (
-            <JobCard key={job._id || Math.random()} job={job} onPress={() => onJobPress(job)} />
-          ))
-        ) : (
-          <View style={styles.emptyFeed}>
-            <Search size={60} color="#E2E8F0" />
-            <Text style={styles.emptyFeedText}>No jobs matching your criteria.</Text>
+            </View>
+            <View style={styles.mapContainer}>
+              <MapSection jobs={filteredJobs} onJobPress={onJobPress} />
+            </View>
           </View>
-        )}
-      </Animated.ScrollView>
-    </SafeAreaView>
+
+          <View style={styles.tipMarquee}>
+            <Zap size={14} color="#F59E0B" />
+            <Text style={styles.tipText}>PRO TIP: Verified profiles get 3x more interview calls!</Text>
+          </View>
+
+          <View style={styles.categoryFlow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {categories.map((cat) => (
+                <TouchableOpacity 
+                  key={cat} 
+                  onPress={() => setSelectedCategory(cat)}
+                  style={[styles.catCard, selectedCategory === cat && styles.catCardActive]}
+                >
+                  <View style={[styles.catIconBox, selectedCategory === cat && styles.catIconBoxActive]}>
+                    {categoryIcons[cat] || <Briefcase size={18} color={selectedCategory === cat ? '#FFF' : '#2563EB'} />}
+                  </View>
+                  <Text style={[styles.catCardText, selectedCategory === cat && styles.catCardTextActive]}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.aiRecommend}>
+            <View style={styles.aiHeader}>
+              <Sparkles size={18} color="#2563EB" />
+              <Text style={styles.aiTitle}>AI Top Matches</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.aiScroll}>
+              {jobs.length > 0 ? jobs.slice(0, 3).map((job, i) => (
+                <TouchableOpacity key={i} style={styles.aiMatchCard} onPress={() => onJobPress(job)}>
+                  <LinearGradient colors={['#F8FAFC', '#FFF']} style={styles.aiMatchInner}>
+                    <Text style={styles.aiJobTitle} numberOfLines={1}>{job.title}</Text>
+                    <View style={styles.aiSalaryRow}>
+                      <IndianRupee size={12} color="#10B981" />
+                      <Text style={styles.aiSalaryText}>{job.salary?.match(/\d+/)?.[0] || '15'}K</Text>
+                    </View>
+                    <View style={styles.matchTag}>
+                      <Text style={styles.matchTagText}>98% FIT</Text>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )) : <View style={styles.aiCardEmpty}><Text>Searching...</Text></View>}
+            </ScrollView>
+          </View>
+
+          <View style={styles.feedHeader}>
+            <Text style={styles.sectionTitle}>
+              {selectedCategory === 'All' ? 'Available Jobs' : `${selectedCategory} Jobs`}
+            </Text>
+            <Text style={styles.countText}>{filteredJobs.length} Results</Text>
+          </View>
+          
+          {loading ? (
+            <SkeletonCard />
+          ) : filteredJobs.length > 0 ? (
+            filteredJobs.map((job) => (
+              <JobCard key={job._id || Math.random()} job={job} onPress={() => onJobPress(job)} />
+            ))
+          ) : (
+            <View style={styles.emptyFeed}>
+              <Search size={60} color="#E2E8F0" />
+              <Text style={styles.emptyFeedText}>No jobs matching your criteria.</Text>
+            </View>
+          )}
+        </Animated.ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
-  premiumHeader: { backgroundColor: '#FFF', paddingHorizontal: 25, paddingTop: 20, paddingBottom: 25, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 20, elevation: 10 },
+  orb: { position: 'absolute', borderRadius: 1000, opacity: 0.15, filter: 'blur(80px)' },
+  orb1: { width: 400, height: 400, backgroundColor: '#2563EB', top: -100, right: -100 },
+  orb2: { width: 350, height: 350, backgroundColor: '#8B5CF6', bottom: 100, left: -100 },
+  premiumHeader: { backgroundColor: 'rgba(255,255,255,0.8)', paddingHorizontal: 25, paddingTop: 20, paddingBottom: 25, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 20, elevation: 5 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
   greetingText: { fontSize: 13, fontWeight: '700', color: '#94A3B8' },
   userName: { fontSize: 24, fontWeight: '900', color: '#1E293B', marginTop: 2 },
@@ -221,13 +240,13 @@ const styles = StyleSheet.create({
   mapSection: { marginBottom: 35 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   sectionTitle: { fontSize: 22, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
-  viewAllBtn: { backgroundColor: '#EFF6FF', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 12 },
+  viewAllBtn: { backgroundColor: 'rgba(37,99,235,0.05)', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 12 },
   viewAllText: { fontSize: 10, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
-  mapContainer: { height: 220, borderRadius: 32, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 10 },
-  tipMarquee: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFBEB', padding: 12, borderRadius: 15, marginBottom: 30, borderWidth: 1, borderColor: '#FEF3C7' },
+  mapContainer: { height: 220, borderRadius: 32, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.02, shadowRadius: 10 },
+  tipMarquee: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(254,243,199,0.5)', padding: 12, borderRadius: 15, marginBottom: 30, borderWidth: 1, borderColor: '#FEF3C7' },
   tipText: { fontSize: 12, fontWeight: '700', color: '#B45309' },
   categoryFlow: { marginBottom: 35 },
-  catCard: { width: 100, height: 120, backgroundColor: '#FFF', borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOpacity: 0.02, shadowRadius: 10 },
+  catCard: { width: 100, height: 120, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: '#F1F5F9' },
   catCardActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
   catIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   catIconBoxActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
@@ -237,7 +256,7 @@ const styles = StyleSheet.create({
   aiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
   aiTitle: { fontSize: 12, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
   aiScroll: { overflow: 'visible' },
-  aiMatchCard: { width: 220, marginRight: 20, borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0', shadowColor: '#2563EB', shadowOpacity: 0.05, shadowRadius: 15 },
+  aiMatchCard: { width: 220, marginRight: 20, borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0' },
   aiMatchInner: { padding: 20, height: 140, justifyContent: 'space-between' },
   aiJobTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B' },
   aiSalaryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
