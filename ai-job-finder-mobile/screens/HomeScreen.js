@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, SafeAreaView, StatusBar, TouchableOpacity, RefreshControl, TextInput, Animated, StyleSheet, Dimensions } from 'react-native';
-import { Search, MapPin, Mic, Sparkles, IndianRupee, Clock, Zap, Star, Briefcase, Filter, ChevronRight, LayoutGrid } from 'lucide-react-native';
+import { Search, MapPin, Mic, Sparkles, IndianRupee, Clock, Zap, Star, Briefcase, Filter, ChevronRight, LayoutGrid, Bell } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import JobCard from '../components/JobCard';
@@ -16,23 +16,16 @@ function HomeScreen({
   const [sortMode, setSortMode] = useState('Newest'); 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-  const orb1Anim = useRef(new Animated.Value(0)).current;
-  const orb2Anim = useRef(new Animated.Value(0)).current;
+  const orbAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 1000, useNativeDriver: true }),
       Animated.loop(
         Animated.sequence([
-          Animated.timing(orb1Anim, { toValue: 20, duration: 4000, useNativeDriver: true }),
-          Animated.timing(orb1Anim, { toValue: 0, duration: 4000, useNativeDriver: true }),
-        ])
-      ).start(),
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(orb2Anim, { toValue: -20, duration: 5000, useNativeDriver: true }),
-          Animated.timing(orb2Anim, { toValue: 0, duration: 5000, useNativeDriver: true }),
+          Animated.timing(orbAnim, { toValue: 20, duration: 3000, useNativeDriver: true }),
+          Animated.timing(orbAnim, { toValue: 0, duration: 3000, useNativeDriver: true }),
         ])
       ).start()
     ]).start();
@@ -48,10 +41,10 @@ function HomeScreen({
   };
 
   const categoryIcons = {
-    'All': <LayoutGrid size={18} color="#2563EB" />,
-    'Driver': <Briefcase size={18} color="#2563EB" />,
-    'Electrician': <Zap size={18} color="#2563EB" />,
-    'Security': <Shield size={18} color="#2563EB" />
+    'All': <LayoutGrid size={18} color="#60A5FA" />,
+    'Driver': <Briefcase size={18} color="#60A5FA" />,
+    'Electrician': <Zap size={18} color="#60A5FA" />,
+    'Security': <Shield size={18} color="#60A5FA" />
   };
 
   const filteredJobs = jobs.filter(job => {
@@ -73,55 +66,41 @@ function HomeScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       
-      {/* ELITE MESH BACKGROUND */}
+      {/* DEEP SPACE BACKGROUND */}
       <View style={StyleSheet.absoluteFill}>
-        <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={StyleSheet.absoluteFill} />
-        <Animated.View style={[styles.orb, styles.orb1, { transform: [{ translateY: orb1Anim }] }]} />
-        <Animated.View style={[styles.orb, styles.orb2, { transform: [{ translateX: orb2Anim }] }]} />
+        <LinearGradient colors={['#020617', '#0F172A', '#1E293B']} style={StyleSheet.absoluteFill} />
+        <Animated.View style={[styles.glowOrb, { top: '20%', right: '-20%', transform: [{ translateY: orbAnim }] }]} />
+        <Animated.View style={[styles.glowOrb, { bottom: '10%', left: '-20%', backgroundColor: '#6366F1', opacity: 0.05 }]} />
       </View>
 
       <SafeAreaView style={{ flex: 1 }}>
-        {/* Elite Header */}
+        {/* WONDERFUL DARK HEADER */}
         <View style={styles.premiumHeader}>
           <View style={styles.headerTop}>
             <View>
               <Text style={styles.greetingText}>{getGreeting()},</Text>
               <Text style={styles.userName}>Yuvaraj Sam 👋</Text>
             </View>
-            <TouchableOpacity style={styles.profileBtn}>
-              <LinearGradient colors={['#F1F5F9', '#E2E8F0']} style={styles.profileBtnInner}>
-                <Filter size={20} color="#1E293B" />
-              </LinearGradient>
+            <TouchableOpacity style={styles.notifBtn}>
+              <Bell size={22} color="#60A5FA" />
+              <View style={styles.notifDot} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.searchContainer}>
-            <View style={styles.searchBar}>
-              <Search size={22} color="#94A3B8" />
-              <TextInput 
-                placeholder="Search 'Driver', 'Helper'..." 
-                style={styles.searchInput}
-                placeholderTextColor="#94A3B8"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              <TouchableOpacity style={styles.voiceIconBox} onPress={onVoicePress}>
-                <Mic size={22} color="#2563EB" />
-                <View style={styles.voicePulse} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.locationBar}>
-            <View style={styles.locLeft}>
-              <MapPin size={14} color="#2563EB" />
-              <Text style={styles.locText}>Chennai, Tamil Nadu</Text>
-            </View>
-            <TouchableOpacity onPress={() => setSortMode(sortMode === 'Newest' ? 'Salary' : 'Newest')} style={styles.sortToggle}>
-              <Text style={styles.sortText}>{sortMode === 'Salary' ? 'HIGH PAY' : 'NEWEST'}</Text>
-              <ChevronRight size={14} color="#64748B" />
+          <View style={styles.searchBar}>
+            <Search size={20} color="#64748B" />
+            <TextInput 
+              placeholder="Search 'Driver', 'Electrician'..." 
+              style={styles.searchInput}
+              placeholderTextColor="#475569"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <TouchableOpacity style={styles.micBtn} onPress={onVoicePress}>
+              <Mic size={20} color="#FFF" />
+              <LinearGradient colors={['#2563EB', '#60A5FA']} style={StyleSheet.absoluteFill} />
             </TouchableOpacity>
           </View>
         </View>
@@ -129,27 +108,32 @@ function HomeScreen({
         <Animated.ScrollView 
           style={[styles.feed, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]} 
           contentContainerStyle={styles.feedContent}
-          refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} tintColor="#60A5FA" />}
         >
-          {/* Content sections same as before but now over the mesh background */}
+          {/* MAP SECTION: GLASS STYLE */}
           <View style={styles.mapSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Explore Nearby Jobs</Text>
-              <TouchableOpacity style={styles.viewAllBtn}>
-                <Text style={styles.viewAllText}>LIVE MAP</Text>
-              </TouchableOpacity>
+              <Text style={styles.sectionTitle}>Jobs Near You</Text>
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>LIVE</Text>
+              </View>
             </View>
-            <View style={styles.mapContainer}>
+            <View style={styles.mapCard}>
               <MapSection jobs={filteredJobs} onJobPress={onJobPress} />
             </View>
           </View>
 
-          <View style={styles.tipMarquee}>
-            <Zap size={14} color="#F59E0B" />
-            <Text style={styles.tipText}>PRO TIP: Verified profiles get 3x more interview calls!</Text>
+          {/* AI TIPS: NEON STYLE */}
+          <View style={styles.aiTipBox}>
+            <LinearGradient colors={['rgba(37,99,235,0.1)', 'rgba(2,6,23,0.3)']} style={styles.aiTipInner}>
+              <Sparkles size={16} color="#60A5FA" />
+              <Text style={styles.aiTipText}>AI Insight: Jobs in <Text style={styles.boldText}>Chennai Central</Text> are hiring 2x faster today!</Text>
+            </LinearGradient>
           </View>
 
-          <View style={styles.categoryFlow}>
+          {/* CATEGORIES: HORIZONTAL GLASS */}
+          <View style={styles.catSection}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {categories.map((cat) => (
                 <TouchableOpacity 
@@ -157,43 +141,21 @@ function HomeScreen({
                   onPress={() => setSelectedCategory(cat)}
                   style={[styles.catCard, selectedCategory === cat && styles.catCardActive]}
                 >
-                  <View style={[styles.catIconBox, selectedCategory === cat && styles.catIconBoxActive]}>
-                    {categoryIcons[cat] || <Briefcase size={18} color={selectedCategory === cat ? '#FFF' : '#2563EB'} />}
+                  <View style={[styles.catIconBox, selectedCategory === cat && styles.catIconActive]}>
+                    {categoryIcons[cat] || <Briefcase size={18} color={selectedCategory === cat ? '#FFF' : '#60A5FA'} />}
                   </View>
-                  <Text style={[styles.catCardText, selectedCategory === cat && styles.catCardTextActive]}>{cat}</Text>
+                  <Text style={[styles.catLabel, selectedCategory === cat && styles.catLabelActive]}>{cat}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
-          <View style={styles.aiRecommend}>
-            <View style={styles.aiHeader}>
-              <Sparkles size={18} color="#2563EB" />
-              <Text style={styles.aiTitle}>AI Top Matches</Text>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.aiScroll}>
-              {jobs.length > 0 ? jobs.slice(0, 3).map((job, i) => (
-                <TouchableOpacity key={i} style={styles.aiMatchCard} onPress={() => onJobPress(job)}>
-                  <LinearGradient colors={['#F8FAFC', '#FFF']} style={styles.aiMatchInner}>
-                    <Text style={styles.aiJobTitle} numberOfLines={1}>{job.title}</Text>
-                    <View style={styles.aiSalaryRow}>
-                      <IndianRupee size={12} color="#10B981" />
-                      <Text style={styles.aiSalaryText}>{job.salary?.match(/\d+/)?.[0] || '15'}K</Text>
-                    </View>
-                    <View style={styles.matchTag}>
-                      <Text style={styles.matchTagText}>98% FIT</Text>
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-              )) : <View style={styles.aiCardEmpty}><Text>Searching...</Text></View>}
-            </ScrollView>
-          </View>
-
-          <View style={styles.feedHeader}>
-            <Text style={styles.sectionTitle}>
-              {selectedCategory === 'All' ? 'Available Jobs' : `${selectedCategory} Jobs`}
-            </Text>
-            <Text style={styles.countText}>{filteredJobs.length} Results</Text>
+          {/* JOB LIST HEADER */}
+          <View style={styles.listHeader}>
+            <Text style={styles.sectionTitle}>Featured Opportunities</Text>
+            <TouchableOpacity style={styles.filterBtn}>
+              <Filter size={16} color="#60A5FA" />
+            </TouchableOpacity>
           </View>
           
           {loading ? (
@@ -203,9 +165,9 @@ function HomeScreen({
               <JobCard key={job._id || Math.random()} job={job} onPress={() => onJobPress(job)} />
             ))
           ) : (
-            <View style={styles.emptyFeed}>
-              <Search size={60} color="#E2E8F0" />
-              <Text style={styles.emptyFeedText}>No jobs matching your criteria.</Text>
+            <View style={styles.emptyState}>
+              <Search size={60} color="#1E293B" />
+              <Text style={styles.emptyText}>No results found</Text>
             </View>
           )}
         </Animated.ScrollView>
@@ -215,58 +177,41 @@ function HomeScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  orb: { position: 'absolute', borderRadius: 1000, opacity: 0.15, filter: 'blur(80px)' },
-  orb1: { width: 400, height: 400, backgroundColor: '#2563EB', top: -100, right: -100 },
-  orb2: { width: 350, height: 350, backgroundColor: '#8B5CF6', bottom: 100, left: -100 },
-  premiumHeader: { backgroundColor: 'rgba(255,255,255,0.8)', paddingHorizontal: 25, paddingTop: 20, paddingBottom: 25, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 20, elevation: 5 },
-  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  greetingText: { fontSize: 13, fontWeight: '700', color: '#94A3B8' },
-  userName: { fontSize: 24, fontWeight: '900', color: '#1E293B', marginTop: 2 },
-  profileBtn: { width: 50, height: 50, borderRadius: 15, overflow: 'hidden' },
-  profileBtnInner: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
-  searchContainer: { marginBottom: 20 },
-  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 20, paddingHorizontal: 20, height: 65, gap: 15 },
-  searchInput: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1E293B' },
-  voiceIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#2563EB', shadowOpacity: 0.1, shadowRadius: 10 },
-  voicePulse: { position: 'absolute', width: 44, height: 44, borderRadius: 12, backgroundColor: '#2563EB', opacity: 0.05 },
-  locationBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  locLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  locText: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
-  sortToggle: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  sortText: { fontSize: 10, fontWeight: '900', color: '#64748B', letterSpacing: 1 },
+  container: { flex: 1 },
+  glowOrb: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: '#2563EB', opacity: 0.1, filter: 'blur(80px)' },
+  premiumHeader: { paddingHorizontal: 25, paddingTop: 30, paddingBottom: 30 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
+  greetingText: { fontSize: 13, fontWeight: '700', color: '#64748B', letterSpacing: 1 },
+  userName: { fontSize: 26, fontWeight: '900', color: '#FFF', marginTop: 4 },
+  notifBtn: { width: 50, height: 50, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.03)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  notifDot: { position: 'absolute', top: 15, right: 15, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444', borderWidth: 2, borderColor: '#020617' },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 20, paddingHorizontal: 20, height: 65, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  searchInput: { flex: 1, marginLeft: 12, fontSize: 16, color: '#FFF', fontWeight: '600' },
+  micBtn: { width: 44, height: 44, borderRadius: 12, overflow: 'hidden', justifyContent: 'center', alignItems: 'center' },
   feed: { flex: 1 },
-  feedContent: { padding: 25, paddingBottom: 150 },
+  feedContent: { paddingHorizontal: 25, paddingBottom: 150 },
   mapSection: { marginBottom: 35 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  sectionTitle: { fontSize: 22, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
-  viewAllBtn: { backgroundColor: 'rgba(37,99,235,0.05)', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 12 },
-  viewAllText: { fontSize: 10, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
-  mapContainer: { height: 220, borderRadius: 32, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.02, shadowRadius: 10 },
-  tipMarquee: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(254,243,199,0.5)', padding: 12, borderRadius: 15, marginBottom: 30, borderWidth: 1, borderColor: '#FEF3C7' },
-  tipText: { fontSize: 12, fontWeight: '700', color: '#B45309' },
-  categoryFlow: { marginBottom: 35 },
-  catCard: { width: 100, height: 120, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: '#F1F5F9' },
+  sectionTitle: { fontSize: 22, fontWeight: '900', color: '#FFF', letterSpacing: -0.5 },
+  liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(239,68,68,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#EF4444' },
+  liveText: { fontSize: 9, fontWeight: '900', color: '#EF4444', letterSpacing: 1 },
+  mapCard: { height: 220, borderRadius: 30, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: '#0F172A' },
+  aiTipBox: { marginBottom: 30, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(96,165,250,0.1)' },
+  aiTipInner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 18 },
+  aiTipText: { flex: 1, fontSize: 13, color: '#94A3B8', lineHeight: 20, fontWeight: '500' },
+  boldText: { color: '#60A5FA', fontWeight: '800' },
+  catSection: { marginBottom: 35 },
+  catCard: { width: 100, height: 120, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
   catCardActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-  catIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  catIconBoxActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
-  catCardText: { fontSize: 12, fontWeight: '800', color: '#64748B' },
-  catCardTextActive: { color: '#FFF' },
-  aiRecommend: { marginBottom: 40 },
-  aiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
-  aiTitle: { fontSize: 12, fontWeight: '900', color: '#2563EB', letterSpacing: 1 },
-  aiScroll: { overflow: 'visible' },
-  aiMatchCard: { width: 220, marginRight: 20, borderRadius: 28, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0' },
-  aiMatchInner: { padding: 20, height: 140, justifyContent: 'space-between' },
-  aiJobTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B' },
-  aiSalaryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  aiSalaryText: { fontSize: 15, fontWeight: '800', color: '#10B981' },
-  matchTag: { backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, alignSelf: 'flex-start' },
-  matchTagText: { fontSize: 10, fontWeight: '900', color: '#10B981' },
-  feedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  countText: { fontSize: 13, fontWeight: '700', color: '#94A3B8' },
-  emptyFeed: { alignItems: 'center', paddingVertical: 80, gap: 20, opacity: 0.5 },
-  emptyFeedText: { fontSize: 16, fontWeight: '600', color: '#64748B' }
+  catIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(96,165,250,0.05)', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  catIconActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
+  catLabel: { fontSize: 12, fontWeight: '800', color: '#475569' },
+  catLabelActive: { color: '#FFF' },
+  listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  filterBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.03)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  emptyState: { alignItems: 'center', paddingVertical: 80, opacity: 0.5 },
+  emptyText: { color: '#475569', fontSize: 16, fontWeight: '600', marginTop: 15 }
 });
 
 export default HomeScreen;
