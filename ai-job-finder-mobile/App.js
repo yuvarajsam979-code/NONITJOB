@@ -61,7 +61,7 @@ function SplashScreen({ onFinish }) {
 // MAIN APP
 // ---------------------------------------------------------
 export default function App() {
-  const [appState, setAppState] = useState('MAIN'); 
+  const [appState, setAppState] = useState('LOGIN'); 
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [isChatActive, setIsChatActive] = useState(false);
   const [isEmployerActive, setIsEmployerActive] = useState(false);
