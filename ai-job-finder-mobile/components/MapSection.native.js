@@ -1,21 +1,36 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, Dimensions, Animated } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, Animated, Linking } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
-import { MapPin, ChevronRight, Briefcase, Car, Zap, Package, ShieldCheck, Home, Sparkles } from 'lucide-react-native';
+import { MapPin, ChevronRight, Briefcase, Car, Zap, Package, ShieldCheck, Home, Sparkles, MessageCircle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const MapSection = ({ jobs = [], onJobPress }) => {
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0.5)).current;
+  const entranceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Sonar Pulse
     Animated.loop(
       Animated.parallel([
         Animated.timing(pulseAnim, { toValue: 3, duration: 2000, useNativeDriver: true }),
         Animated.timing(opacityAnim, { toValue: 0, duration: 2000, useNativeDriver: true }),
       ])
     ).start();
+
+    // Staggered Entrance
+    Animated.spring(entranceAnim, {
+      toValue: 1,
+      tension: 50,
+      friction: 7,
+      useNativeDriver: true
+    }).start();
   }, []);
+
+  const handleWhatsApp = (job) => {
+    const phone = job.employer?.contact || '9876543210';
+    Linking.openURL(`whatsapp://send?phone=91${phone}&text=Hi, I saw your job "${job.title}" on Rozgar AI.`);
+  };
 
   const region = {
     latitude: 13.0827,
@@ -37,7 +52,7 @@ const MapSection = ({ jobs = [], onJobPress }) => {
   return (
     <View style={styles.container}>
       <MapView style={styles.map} initialRegion={region}>
-        {jobs.map((job) => {
+        {jobs.map((job, index) => {
           const config = getCategoryConfig(job.category);
           const IconComp = config.icon;
           
@@ -49,8 +64,13 @@ const MapSection = ({ jobs = [], onJobPress }) => {
                 longitude: job.location?.longitude || (80.27 + Math.random() * 0.05),
               }}
             >
-              <View style={styles.markerWrapper}>
-                {/* Sonar Ring */}
+              <Animated.View style={[
+                styles.markerWrapper, 
+                { 
+                  transform: [{ scale: entranceAnim }],
+                  opacity: entranceAnim 
+                }
+              ]}>
                 <Animated.View style={[
                   styles.sonarRing, 
                   { 
@@ -59,39 +79,42 @@ const MapSection = ({ jobs = [], onJobPress }) => {
                     transform: [{ scale: pulseAnim }] 
                   }
                 ]} />
-                {/* Main Marker */}
                 <View style={[styles.markerCircle, { backgroundColor: config.color }]}>
                   <IconComp size={10} color="#FFF" />
                 </View>
-              </View>
+              </Animated.View>
               
               <Callout tooltip onPress={() => onJobPress && onJobPress(job)}>
                 <View style={styles.callout}>
-                  <View style={styles.aiHeader}>
-                    <View style={styles.aiBadge}>
-                      <Sparkles size={10} color="#2563EB" />
-                      <Text style={styles.aiMatchText}>98% AI MATCH</Text>
+                  <View style={styles.calloutHeader}>
+                    <View style={styles.employerIcon}>
+                      <Text style={styles.employerInitial}>{job.employer?.name?.charAt(0) || 'R'}</Text>
                     </View>
-                    <View style={styles.matchBarBase}>
-                      <View style={styles.matchBarFill} />
+                    <View style={styles.headerText}>
+                      <Text style={styles.calloutTitle} numberOfLines={1}>{job.title}</Text>
+                      <Text style={styles.calloutEmployer}>{job.employer?.name || 'Local Business'}</Text>
                     </View>
                   </View>
 
-                  <View style={styles.calloutBody}>
-                    <Text style={styles.calloutTitle} numberOfLines={1}>{job.title}</Text>
-                    <Text style={styles.calloutEmployer}>{job.employer?.name || 'Local Employer'}</Text>
-                  </View>
-                  
-                  <View style={styles.infoRow}>
-                    <Text style={styles.calloutSalary}>{job.salary}</Text>
+                  <View style={styles.aiRow}>
+                    <Sparkles size={10} color="#2563EB" />
+                    <Text style={styles.aiMatchText}>98% AI MATCH</Text>
+                    <View style={styles.matchDot} />
                     <Text style={styles.distText}>2.4 KM</Text>
                   </View>
+                  
+                  <Text style={styles.calloutSalary}>{job.salary}</Text>
 
-                  <View style={styles.applyBtnBox}>
-                    <LinearGradient colors={['#3B82F6', '#1E3A8A']} style={styles.applyBtnInner}>
-                      <Text style={styles.applyBtnText}>VIEW & APPLY</Text>
-                      <ChevronRight size={12} color="#FFF" />
-                    </LinearGradient>
+                  <View style={styles.actionRow}>
+                    <TouchableOpacity style={styles.waBtn} onPress={() => handleWhatsApp(job)}>
+                      <MessageCircle size={16} color="#22C55E" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.applyBtn}>
+                      <LinearGradient colors={['#2563EB', '#1D4ED8']} style={styles.applyBtnInner}>
+                        <Text style={styles.applyBtnText}>VIEW & APPLY</Text>
+                        <ChevronRight size={10} color="#FFF" />
+                      </LinearGradient>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </Callout>
@@ -114,25 +137,23 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, elevation: 10
   },
   callout: { 
-    backgroundColor: '#FFF', padding: 18, borderRadius: 28, width: 210,
-    borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 15
+    backgroundColor: '#FFF', padding: 18, borderRadius: 32, width: 220,
+    borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 20
   },
-  aiHeader: { marginBottom: 12 },
-  aiBadge: { 
-    flexDirection: 'row', alignItems: 'center', gap: 4, 
-    backgroundColor: '#F0F7FF', paddingHorizontal: 8, paddingVertical: 4, 
-    borderRadius: 8, alignSelf: 'flex-start', marginBottom: 6 
-  },
-  aiMatchText: { fontSize: 8, fontWeight: '900', color: '#2563EB' },
-  matchBarBase: { height: 3, backgroundColor: '#F1F5F9', borderRadius: 2, width: '100%' },
-  matchBarFill: { height: '100%', backgroundColor: '#2563EB', borderRadius: 2, width: '90%' },
-  calloutBody: { marginBottom: 12 },
-  calloutTitle: { fontSize: 14, fontWeight: '900', color: '#1E293B', marginBottom: 2 },
+  calloutHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
+  employerIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+  employerInitial: { fontSize: 14, fontWeight: '900', color: '#2563EB' },
+  headerText: { flex: 1 },
+  calloutTitle: { fontSize: 14, fontWeight: '900', color: '#1E293B' },
   calloutEmployer: { fontSize: 10, fontWeight: '700', color: '#94A3B8' },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
-  calloutSalary: { fontSize: 16, fontWeight: '900', color: '#10B981' },
-  distText: { fontSize: 10, fontWeight: '800', color: '#CBD5E1' },
-  applyBtnBox: { height: 48, borderRadius: 14, overflow: 'hidden' },
+  aiRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  aiMatchText: { fontSize: 9, fontWeight: '900', color: '#2563EB' },
+  matchDot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#CBD5E1' },
+  distText: { fontSize: 9, fontWeight: '800', color: '#94A3B8' },
+  calloutSalary: { fontSize: 16, fontWeight: '900', color: '#10B981', marginBottom: 15 },
+  actionRow: { flexDirection: 'row', gap: 10 },
+  waBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F0FDF4', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#DCFCE7' },
+  applyBtn: { flex: 1, height: 44, borderRadius: 12, overflow: 'hidden' },
   applyBtnInner: { width: '100%', height: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   applyBtnText: { fontSize: 10, fontWeight: '900', color: '#FFF', letterSpacing: 0.5 },
 });
