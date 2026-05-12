@@ -31,7 +31,7 @@ function HomeScreen({
     ]).start();
   }, []);
 
-  const categories = ['All', ...new Set(jobs.map(j => j.category))];
+  const categories = ['All', ...new Set((jobs || []).map(j => j?.category).filter(Boolean))];
   
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -47,19 +47,19 @@ function HomeScreen({
     'Security': <Shield size={18} color="#60A5FA" />
   };
 
-  const filteredJobs = jobs.filter(job => {
-    const query = searchQuery.toLowerCase();
+  const filteredJobs = (jobs || []).filter(job => {
+    const query = searchQuery?.toLowerCase() || '';
     return (
-      job.title.toLowerCase().includes(query) || 
-      job.category.toLowerCase().includes(query) ||
-      job.description?.toLowerCase().includes(query) ||
-      job.location?.address?.toLowerCase().includes(query) ||
-      job.employer?.name?.toLowerCase().includes(query)
-    ) && (selectedCategory === 'All' || job.category === selectedCategory);
+      job?.title?.toLowerCase().includes(query) || 
+      job?.category?.toLowerCase().includes(query) ||
+      job?.description?.toLowerCase().includes(query) ||
+      job?.location?.address?.toLowerCase().includes(query) ||
+      job?.employer?.name?.toLowerCase().includes(query)
+    ) && (selectedCategory === 'All' || job?.category === selectedCategory);
   }).sort((a, b) => {
     if (sortMode === 'Salary') {
       const getSalary = (s) => parseInt(s?.match(/\d+/)?.[0] || 0);
-      return getSalary(b.salary) - getSalary(a.salary);
+      return getSalary(b?.salary) - getSalary(a?.salary);
     }
     return 0; 
   });

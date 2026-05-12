@@ -1,11 +1,13 @@
 import React, { useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Animated, Platform } from 'react-native';
-import { Phone, MessageCircle, ShieldCheck, MapPin, Sparkles, TrendingUp, Zap } from 'lucide-react-native';
+import { Phone, MessageCircle, ShieldCheck, MapPin, Sparkles, TrendingUp, Zap, IndianRupee } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const JobCard = ({ job, onPress }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   
+  if (!job) return null;
+
   const handlePressIn = () => {
     Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true }).start();
   };
@@ -14,12 +16,20 @@ const JobCard = ({ job, onPress }) => {
     Animated.spring(scaleAnim, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start();
   };
 
-  const handleCall = () => Linking.openURL(`tel:${job.employer.contact}`);
-  const handleWhatsApp = () => Linking.openURL(`whatsapp://send?phone=91${job.employer.contact}&text=Hi, I am interested in your job: ${job.title}`);
+  const handleCall = () => {
+    const contact = job?.employer?.contact || job?.contact;
+    if (contact) Linking.openURL(`tel:${contact}`);
+  };
 
-  // Mock distance for MVP feel
+  const handleWhatsApp = () => {
+    const contact = job?.employer?.contact || job?.contact;
+    if (contact) Linking.openURL(`whatsapp://send?phone=91${contact}&text=Hi, I am interested in your job: ${job?.title}`);
+  };
+
+  // Safe data extraction
   const distance = (Math.random() * 5).toFixed(1);
   const matchScore = Math.floor(Math.random() * (99 - 85 + 1) + 85);
+  const salaryVal = job?.salary?.match(/\d+/)?.[0] || '15';
 
   return (
     <Animated.View style={[styles.cardWrapper, { transform: [{ scale: scaleAnim }] }]}>
@@ -41,20 +51,20 @@ const JobCard = ({ job, onPress }) => {
         <View style={styles.header}>
           <View style={styles.titleBox}>
             <View style={styles.titleRow}>
-              <Text style={styles.title} numberOfLines={1}>{job.title}</Text>
+              <Text style={styles.title} numberOfLines={1}>{job?.title || 'Job Opportunity'}</Text>
               <View style={styles.verifiedBadge}>
                 <ShieldCheck size={14} color="#2563EB" />
               </View>
             </View>
             <View style={styles.locRow}>
               <MapPin size={12} color="#94A3B8" />
-              <Text style={styles.locText}>{job.location.address || 'Chennai'}</Text>
+              <Text style={styles.locText} numberOfLines={1}>{job?.location?.address || 'Chennai'}</Text>
               <View style={styles.dot} />
               <Text style={styles.distanceText}>{distance} km away</Text>
             </View>
           </View>
           <View style={styles.salaryContainer}>
-            <Text style={styles.salaryValue}>₹{job.salary?.match(/\d+/)?.[0] || '15'}K</Text>
+            <Text style={styles.salaryValue}>₹{salaryVal}K</Text>
             <Text style={styles.salaryPeriod}>/mo</Text>
           </View>
         </View>
@@ -72,7 +82,7 @@ const JobCard = ({ job, onPress }) => {
 
         <View style={styles.actionSection}>
           <TouchableOpacity style={styles.callButton} onPress={handleCall}>
-            <Phone size={18} color="#475569" />
+            <Phone size={18} color="#64748B" />
             <Text style={styles.callText}>CALL</Text>
           </TouchableOpacity>
 
@@ -93,7 +103,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 8,
   },
