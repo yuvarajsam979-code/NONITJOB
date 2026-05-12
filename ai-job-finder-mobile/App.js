@@ -144,11 +144,11 @@ function HomeScreen({
         contentContainerStyle={styles.feedContent}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchJobs} />}
       >
-        {/* Map View Integration (Live Connected) */}
+        {/* Map View Integration (Live & Interactive) */}
         <View style={styles.mapConnectionBox}>
           <Text style={styles.sectionTitle}>Jobs Near You (Map View)</Text>
           <View style={styles.mapInner}>
-            <MapSection jobs={filteredJobs} />
+            <MapSection jobs={filteredJobs} onJobPress={onJobPress} />
           </View>
         </View>
 
